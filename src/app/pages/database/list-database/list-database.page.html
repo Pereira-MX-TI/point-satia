@@ -1,0 +1,19 @@
+<ion-header>
+    <app-nav-bar-simple></app-nav-bar-simple>
+</ion-header>
+<ion-content class="ion-padding"> 
+
+  <app-list-item
+      [nameList]="'tableDb'"
+      [messageEmpty]="'base de datos'"
+      [pipe]="databasePipe"
+      [pipeOpc]="0"
+      [headers]="true"
+      [columns]="columns"
+      (response)="selectColumn($event)"
+      (changePage)="changePagination($event)"
+      (responseSizePage)="changeSizePage($event)"
+      (refresh)="resetAndRefresh()"
+      [loading]="loading"
+    ></app-list-item>  
+</ion-content>

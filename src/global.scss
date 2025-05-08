@@ -1,0 +1,56 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import "@ionic/angular/css/core.css";
+
+/* Basic CSS for apps built with Ionic */
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/structure.css";
+@import "@ionic/angular/css/typography.css";
+@import "@ionic/angular/css/display.css";
+
+/* Optional CSS utils that can be commented out */
+@import "@ionic/angular/css/padding.css";
+@import "@ionic/angular/css/float-elements.css";
+@import "@ionic/angular/css/text-alignment.css";
+@import "@ionic/angular/css/text-transformation.css";
+@import "@ionic/angular/css/flex-utils.css";
+
+/**
+ * Ionic Dark Mode
+ * -----------------------------------------------------
+ * For more info, please see:
+ * https://ionicframework.com/docs/theming/dark-mode
+ */
+
+/* @import "@ionic/angular/css/palettes/dark.always.css"; */
+/* @import "@ionic/angular/css/palettes/dark.class.css"; */
+@import "@ionic/angular/css/palettes/dark.system.css";
+
+
+:root {
+    --color-new-1-1: 29, 55, 100; /*rgb(29, 55, 100)*/
+    --color-new-1-2: 18, 39, 75; /*rgb(18, 39, 75);*/
+  
+    --color-new-3-1: 255, 255, 255; /*rgb(255, 255, 255);*/
+    --color-new-3-2: 235, 235, 235; /*rgb(235, 235, 235);*/
+  
+    --color-new-4-1: 0, 0, 0; /*rgb(0, 0, 0);*/
+    --color-new-4-2: 25, 25, 25; /*rgb(25, 25, 25);*/
+  
+    --color-new-5-1: 168, 216, 234; /*rgb(168, 216, 234);*/
+  
+    --color-new-6-1: 247, 51, 51; /*rgb(247, 51, 51);*/
+  
+    --color-new-7-1: 228, 201, 50; /*rgb(228, 201, 50);*/
+    --color-new-8-1: 25, 82, 11; /* rgb(25, 82, 11);*/
+  }

@@ -1,0 +1,14 @@
+<section>
+  @if(view()){
+  <div class="img_container" [@fadeInOut]>
+    <img [src]="gif" />
+  </div>
+  }
+  <div
+    [style.display]="view() ? 'none' : 'block'"
+    class="content_loader"
+    [@fadeInOut]
+  >
+    <ng-content></ng-content>
+  </div>
+</section>

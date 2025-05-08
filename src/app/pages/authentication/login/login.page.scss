@@ -1,0 +1,61 @@
+.container{
+    width: 100%;
+    height: 100%;
+
+
+    background-image: url("/assets/login_backgroud.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center
+}
+
+img{
+    width: 100%;
+    height: 8rem;
+    width: 100%;
+    object-fit: contain;
+    background-color: rgb(var(--color-new-3-1),0.9);
+}
+form{
+    display: flex;
+    flex-direction: column;
+    height: calc(50% - 8rem);
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 10%;
+    box-sizing: border-box;
+    background-color: rgb(var(--color-new-3-1),0.9);
+}
+
+form ::ng-deep mat-form-field{
+    width: 100%;
+}
+
+form ion-button{
+    width: 100%;
+}
+
+.primary{
+    --background: rgb(var(--color-new-1-1)) !important;
+    --color: rgb(var(--color-new-3-1)) !important;
+}
+
+.rect_1,
+.rect_2{
+    width: 100%; 
+    height: 25%;
+    background-color: rgb(var(--color-new-3-1),0.9);
+    transform: rotate(180deg);
+}
+.rect_1{
+    clip-path: polygon(100% 0, 0 0, 0 100%);
+}
+
+.rect_2{
+    clip-path: polygon(100% 100%, 100% 0, 0 100%);
+}

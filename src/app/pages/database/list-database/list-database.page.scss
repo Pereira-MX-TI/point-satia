@@ -1,0 +1,15 @@
+@media screen and (max-width: 767px) {
+
+    ::ng-deep #tableDb {
+      .headers #head-2,
+      .row #column-2{
+        display: none;
+      }
+  
+      .headers #head-1,
+      .row #column-1{
+        grid-column: span 6 !important;
+      }
+    }
+  }
+  

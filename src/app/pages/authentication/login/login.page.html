@@ -1,0 +1,52 @@
+<ion-content [@fadeInOut]>
+  <div class="container">
+      <div class="rect_1"></div>
+
+      <img
+        alt="logo satia"
+        title="logo satia"
+        src="assets/logo_satia.svg"
+      />
+      <form [formGroup]="formGroup">
+        <mat-form-field>
+          <mat-label>Cuenta</mat-label>
+          <input matInput type="email" formControlName="email" />
+          @if( formGroup.get('email')!.hasError('required') &&
+          formGroup.get('email')!.touched){
+          <mat-error>Campo vació</mat-error>}
+          @if(formGroup.get('email')!.hasError('email')){
+          <mat-error>Correo invalido</mat-error>}
+        </mat-form-field>
+        <mat-form-field>
+            <mat-label>Contraseña</mat-label>
+            <input
+              matInput
+              [type]="hide ? 'password' : 'text'"
+              formControlName="password"
+              (keyup.enter)="register(); hide = true"
+            />
+     
+            @if( formGroup.get('password')!.hasError('required') &&
+            formGroup.get('password')!.touched){
+            <mat-error>Campo vació</mat-error>}
+
+            <button
+              type="button"
+              mat-icon-button
+              matSuffix
+              (click)="hide = !hide"
+              [attr.aria-label]="'Hide password'"
+              [attr.aria-pressed]="hide"
+            >
+              <mat-icon>{{ hide ? "visibility_off" : "visibility" }}</mat-icon>
+            </button>
+        </mat-form-field>
+        <ion-button class="primary" (click)="register()">
+          Iniciar sesión
+        </ion-button>
+      </form>
+      <div class="rect_2"></div>
+
+  </div>
+
+</ion-content>

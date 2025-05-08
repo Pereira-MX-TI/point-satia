@@ -1,0 +1,140 @@
+<app-loading [view]="loading()" [download]="download()">
+  <div [id]="nameList()" class="content_loader">
+    @if(items.length != 0){ @if(headers()){
+      <div
+        [style.grid-template-columns]="'repeat(' + totalColumns() + ', 1fr)'"
+        class="headers"
+      >
+        <span class="item-index">#</span>
+        @for (columnHead of columns(); track columnHead; let indexHead = $index){
+        <span
+          [id]="'head-' + (indexHead + 1)"
+          class="item"
+          [style.grid-column]="'span ' + columnHead.size"
+        >
+          {{ columnHead.head }}
+        </span>
+        }
+      </div>
+      }
+      <div #containerList class="body_list" (scroll)="changeScroll($event)">
+        @for(item of items; track item;let index = $index){
+        <div
+          class="row"
+          [style.grid-auto-rows]="heightRow() + 'rem'"
+          [style.grid-template-columns]="'repeat(' + totalColumns() + ', 1fr)'"
+          #lastItem
+        >
+          <span class="item-index">
+            {{ index | currentIndexOfListItem : paginator }}
+          </span>
+  
+          @for (column of columns(); track column.id; let indexColumn = $index){
+          @switch (column.type) { @case ('text') {
+          <p
+            [id]="'column-' + (indexColumn + 1)"
+            class="column"
+            [style.grid-column]="'span ' + column.size"
+          >
+            {{
+              pipe().transform(item, pipeOpc(), column.name)
+                | summarizeWord : sizeSummarizeWord()
+            }}
+          </p>
+          } @case ('btn'){
+          <div
+            [id]="'column-' + (indexColumn + 1)"
+            class="column buttons"
+            [style.grid-column]="'span ' + column.size"
+          >
+            @for (itrButton of column.buttons; track itrButton;){
+            <mat-icon
+              (click)="
+                response.emit({ operation: itrButton.operation, data: item })
+              "
+              >{{ itrButton.icon }}</mat-icon
+            >
+            }
+          </div>
+  
+          } @case ('img'){
+          <img
+            [id]="'column-' + (indexColumn + 1)"
+            [style.grid-column]="'span ' + column.size"
+            onerror="this.src='assets/default.jpg'"
+            [src]="pipe().transform(item, pipeOpc(), column.name)"
+          />
+          }@case ('alarm'){
+          <div
+            class="image_alarm"
+            [id]="'column-' + (indexColumn + 1)"
+            [style.grid-column]="'span ' + column.size"
+          >
+            <img
+              onerror="this.src='assets/default.jpg'"
+              [src]="
+                pipe().transform(item, pipeOpc(), column.name) == 0
+                  ? 'assets/done_icon.png'
+                  : 'assets/alarm_icon.png'
+              "
+            />
+            @if(pipe().transform(item, pipeOpc(), column.name) != 0){
+  
+            <p>{{ pipe().transform(item, pipeOpc(), column.name) }}</p>
+            }
+          </div>
+  
+          } @case ('radio'){
+          <mat-slide-toggle
+            [id]="'column-' + (indexColumn + 1)"
+            [(ngModel)]="item.select"
+            (toggleChange)="response.emit({ operation: 'radio', data: item })"
+          ></mat-slide-toggle>
+          } @case ('check'){
+          <mat-checkbox
+            [id]="'column-' + (indexColumn + 1)"
+            [(ngModel)]="item.select"
+            (toggleChange)="response.emit({ operation: 'check', data: item })"
+          ></mat-checkbox>
+          } } }
+        </div>
+  
+        }
+      </div>
+      @if(viewPaginator()){
+  
+      <div class="panel_footer">
+        <label class="space"></label>
+        @if(sizes.length != 0){
+        <span class="size_page" [matMenuTriggerFor]="menu">
+          {{ paginator.pageSize }}
+          <mat-icon>arrow_drop_down</mat-icon>
+        </span>
+  
+        <mat-menu #menu="matMenu">
+          @for( itrSize of sizes; track itrSize){
+          <button mat-menu-item (click)="responseSizePage.emit(itrSize)">
+            {{ itrSize }}
+          </button>
+          }
+        </mat-menu>
+        }
+  
+        <mat-paginator
+          #matPaginator
+          showFirstLastButtons="false"
+          hidePageSize="true"
+          [length]="paginator.quantityTotal"
+          (page)="changePagination($event)"
+        >
+        </mat-paginator>
+      </div>
+      } } @else {
+      <message-empty [nameRegister]="messageEmpty()"> </message-empty>
+      }
+    <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+      <ion-refresher-content>
+      </ion-refresher-content>
+    </ion-refresher>
+  </div>
+</app-loading>

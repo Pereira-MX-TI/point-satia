@@ -1,0 +1,7 @@
+{
+  "name": "pointsat",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

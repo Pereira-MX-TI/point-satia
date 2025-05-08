@@ -1,0 +1,27 @@
+<section
+  class="filter_input"
+>
+  <input
+    matInput
+    placeholder="Buscar"
+    [formControl]="formControl"
+    class="filter_input_item"
+    (ngModelChange)="setAutoComplete()"
+    (keyup.enter)="setSearch()"
+    [matAutocomplete]="auto"
+  />
+  <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
+    @for (data of listObservable; track data){
+    <mat-option
+      [value]="data"
+      [title]="data"
+      (click)="setSearchAutoComplete(data)"
+    >
+      {{ data }}
+    </mat-option>
+    }
+  </mat-autocomplete>
+
+  <mat-icon (click)="setSearch()" class="icon-search">search</mat-icon>
+
+</section>
