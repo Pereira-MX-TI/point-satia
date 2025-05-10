@@ -1,10 +1,17 @@
 <ion-toolbar class="nav">
-  <ion-buttons slot="end">
 
+  <ion-buttons slot="start">
+    @if(urlBack() != ''){
+      <ion-button class="button" [routerLink]="urlBack()">
+        <ion-icon name="arrow-back"></ion-icon>
+      </ion-button>
+    }
+  </ion-buttons>
+
+  <ion-buttons slot="end">
     <ion-button class="button" (click)="openSearchModal()">
       <ion-icon name="search"></ion-icon>
     </ion-button>
-
     <ion-button class="button">
       <ion-icon name="ellipsis-vertical"></ion-icon>
     </ion-button>

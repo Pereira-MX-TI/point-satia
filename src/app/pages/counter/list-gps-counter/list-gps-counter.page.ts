@@ -4,47 +4,58 @@ import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { Subscription, debounceTime, finalize } from 'rxjs';
 import { ListItemComponent } from 'src/app/components/list-item/list-item.component';
-import { NavBarSimpleComponent } from 'src/app/components/nav-bar-simple/nav-bar-simple.component';
 import { initializeListSubscription } from 'src/app/functions/subscription-list.function';
 import { Account } from 'src/app/models/authentication/account';
 import { ColumnConfig } from 'src/app/models/column-config.model';
 import { ResponseListItem } from 'src/app/models/response-list-item.model';
+import { Location_route } from 'src/app/models/route/location_route.model';
 import { DataPage } from 'src/app/models/shared/dataPage';
 import { LoginObservable } from 'src/app/observables/login.observable';
+import { RouteObservable } from 'src/app/observables/route.observable';
+import { CounterPipe } from 'src/app/pipes/counter/counter.pipe';
 import { DatabasePipe } from 'src/app/pipes/data-base/database.pipe';
 import { DataListService } from 'src/app/services/data-list.service';
 import { HttpDataBaseService } from 'src/app/services/database/http-database.service';
 import { SharePanelService } from 'src/app/services/panel-share.service';
+import { HttpRouteService } from 'src/app/services/route/http-route.service';
 
 @Component({
-  selector: 'app-list-database',
-  templateUrl: './list-database.page.html',
-  styleUrls: ['./list-database.page.scss'],
+  selector: 'app-list-gps-counter',
+  templateUrl: './list-gps-counter.page.html',
+  styleUrls: ['./list-gps-counter.page.scss'],
   standalone: true,
-  imports: [IonicModule, NavBarSimpleComponent, ListItemComponent],
+  imports: [IonicModule, ListItemComponent],
 })
-export class ListDatabasePage implements OnInit, OnDestroy {
+export class ListGpsCounterPage implements OnInit, OnDestroy {
   private router: Router = inject(Router);
 
   private snackBar: MatSnackBar = inject(MatSnackBar);
-  private loginObservable: LoginObservable = inject(LoginObservable);
-  httpDataBaseService: HttpDataBaseService = inject(HttpDataBaseService);
+  private httpRouteService: HttpRouteService = inject(HttpRouteService);
   private dataListService: DataListService = inject(DataListService);
   private sharePanelService: SharePanelService = inject(SharePanelService);
+  private routeObservable: RouteObservable = inject(RouteObservable);
+
+  currentLocation: Location_route | null;
 
   listSubscription: Subscription[];
   dataPage: DataPage;
-  account: Account | null = null;
   loading: boolean = true;
   columns: ColumnConfig[] = [];
-  databasePipe: DatabasePipe = new DatabasePipe();
+  counterPipe: CounterPipe = new CounterPipe();
 
   constructor() {
     this.columns = [
       {
         id: crypto.randomUUID(),
-        head: 'Base de datos',
-        name: 'database',
+        head: 'Contador',
+        name: 'meter_serial',
+        type: 'text',
+        size: 3,
+      },
+      {
+        id: crypto.randomUUID(),
+        head: 'Ubicación',
+        name: 'address',
         type: 'text',
         size: 3,
       },
@@ -60,12 +71,13 @@ export class ListDatabasePage implements OnInit, OnDestroy {
 
     this.dataPage = this.dataListService.buildDataList();
     this.listSubscription = initializeListSubscription(4);
+
+    this.currentLocation = this.routeObservable.getData();
   }
 
   ngOnInit(): void {
     this.subscriptionDataInput();
     this.subscriptionSearch();
-    this.subscriptionLogin();
     this.refresh();
   }
 
@@ -84,8 +96,17 @@ export class ListDatabasePage implements OnInit, OnDestroy {
           return;
         }
 
-        this.httpDataBaseService
-          .autoCompletedDataBase({ word: value })
+        if (!this.currentLocation) {
+          this.sharePanelService.autoComplete$.emit([]);
+          return;
+        }
+
+        this.httpRouteService
+          .autoCompletedGpsCounterByRoute({
+            filter: 'fail',
+            word: value,
+            route_id: this.currentLocation?.id,
+          })
           .subscribe(({ data }) => {
             const listAutocompleted: string[] = Object.keys(data).map(
               (itr) => data[itr]
@@ -105,12 +126,6 @@ export class ListDatabasePage implements OnInit, OnDestroy {
     );
   }
 
-  private subscriptionLogin(): void {
-    this.listSubscription[2] = this.loginObservable.data$.subscribe(
-      (res: Account | null) => (this.account = res)
-    );
-  }
-
   changePagination(): void {
     this.dataPage.dataPaginator.pageIndex++;
 
@@ -118,11 +133,15 @@ export class ListDatabasePage implements OnInit, OnDestroy {
   }
 
   refresh(): void {
-    this.httpDataBaseService
-      .listDataBases({
+    if (!this.currentLocation) return;
+
+    this.httpRouteService
+      .gpsCounterByRoute({
+        filter: 'fail',
+        route_id: this.currentLocation.id,
         offset: this.dataPage.dataPaginator.offset,
         limit: this.dataPage.dataPaginator.limit,
-        option: 'pagination',
+        option: 1,
         ...(this.dataPage.dataPaginator.search === ''
           ? {}
           : { search: this.dataPage.dataPaginator.search }),
@@ -131,11 +150,11 @@ export class ListDatabasePage implements OnInit, OnDestroy {
       .subscribe(
         ({ data }) => {
           const { list } = data;
-
+          console.log(list);
           this.dataPage = this.dataListService.updateDataList(
             this.dataPage,
             list,
-            'tableDb'
+            'tableCounter'
           );
         },
         () => {
@@ -149,15 +168,6 @@ export class ListDatabasePage implements OnInit, OnDestroy {
 
   selectColumn({ data, operation }: ResponseListItem): void {
     if (operation !== 'view') return;
-
-    if (!this.account) return;
-
-    this.loginObservable.updateData({
-      ...this.account,
-      api: data,
-    });
-
-    this.router.navigateByUrl('Routes');
   }
 
   resetAndRefresh(): void {

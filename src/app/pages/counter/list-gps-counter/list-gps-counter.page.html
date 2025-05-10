@@ -1,11 +1,8 @@
-<ion-header>
-  <app-nav-bar-simple></app-nav-bar-simple>
-</ion-header>
 <ion-content class="ion-padding">
   <app-list-item
-    [nameList]="'tableDb'"
-    [messageEmpty]="'base de datos'"
-    [pipe]="databasePipe"
+    [nameList]="'tableCounter'"
+    [messageEmpty]="'contadores'"
+    [pipe]="counterPipe"
     [pipeOpc]="0"
     [columns]="columns"
     (response)="selectColumn($event)"

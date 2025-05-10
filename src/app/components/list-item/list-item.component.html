@@ -1,4 +1,4 @@
-<app-loading [view]="loading()" [download]="download()">
+<!-- <app-loading [view]="loading()" [download]="download()">
   <div [id]="nameList()" class="content_loader">
     @if(items.length != 0){ @if(headers()){
       <div
@@ -58,32 +58,13 @@
           </div>
   
           } @case ('img'){
-          <img
+          <ion-img
             [id]="'column-' + (indexColumn + 1)"
+            class="ion-img"
             [style.grid-column]="'span ' + column.size"
             onerror="this.src='assets/default.jpg'"
             [src]="pipe().transform(item, pipeOpc(), column.name)"
-          />
-          }@case ('alarm'){
-          <div
-            class="image_alarm"
-            [id]="'column-' + (indexColumn + 1)"
-            [style.grid-column]="'span ' + column.size"
-          >
-            <img
-              onerror="this.src='assets/default.jpg'"
-              [src]="
-                pipe().transform(item, pipeOpc(), column.name) == 0
-                  ? 'assets/done_icon.png'
-                  : 'assets/alarm_icon.png'
-              "
-            />
-            @if(pipe().transform(item, pipeOpc(), column.name) != 0){
-  
-            <p>{{ pipe().transform(item, pipeOpc(), column.name) }}</p>
-            }
-          </div>
-  
+          ></ion-img>
           } @case ('radio'){
           <mat-slide-toggle
             [id]="'column-' + (indexColumn + 1)"
@@ -135,6 +116,99 @@
     <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
       <ion-refresher-content>
       </ion-refresher-content>
+    </ion-refresher>
+  </div>
+</app-loading> -->
+
+<app-loading [view]="loading()" [download]="download()">
+  <div [id]="nameList()" class="content_loader">
+    @if(items.length != 0){
+    <ion-list lass="body_list">
+      @for(item of items; track item;let index = $index){
+      <ion-item-sliding>
+        <ion-item>
+          <div
+            class="row"
+            [style.grid-auto-rows]="heightRow() + 'rem'"
+            [style.grid-template-columns]="
+              'repeat(' + totalColumns() + ', 1fr)'
+            "
+            #lastItem
+          >
+            <span class="item-index">
+              {{ index + 1 }}
+            </span>
+
+            @for (column of columns(); track column.id; let indexColumn =
+            $index){ @switch (column.type) { @case ('text') {
+            <p
+              [id]="'column-' + (indexColumn + 1)"
+              class="column"
+              [style.grid-column]="'span ' + column.size"
+            >
+              {{
+                pipe().transform(item, pipeOpc(), column.name)
+                  | summarizeWord : sizeSummarizeWord()
+              }}
+            </p>
+            } @case ('btn'){
+            <div
+              [id]="'column-' + (indexColumn + 1)"
+              class="column buttons"
+              [style.grid-column]="'span ' + column.size"
+            >
+              @for (itrButton of column.buttons; track itrButton;){
+              <mat-icon
+                (click)="
+                  response.emit({ operation: itrButton.operation, data: item })
+                "
+                >{{ itrButton.icon }}</mat-icon
+              >
+              }
+            </div>
+
+            } @case ('img'){
+            <ion-img
+              [id]="'column-' + (indexColumn + 1)"
+              class="ion-img"
+              [style.grid-column]="'span ' + column.size"
+              onerror="this.src='assets/default.jpg'"
+              [src]="pipe().transform(item, pipeOpc(), column.name)"
+            ></ion-img>
+            } @case ('radio'){
+            <mat-slide-toggle
+              [id]="'column-' + (indexColumn + 1)"
+              [(ngModel)]="item.select"
+              (toggleChange)="response.emit({ operation: 'radio', data: item })"
+            ></mat-slide-toggle>
+            } @case ('check'){
+            <mat-checkbox
+              [id]="'column-' + (indexColumn + 1)"
+              [(ngModel)]="item.select"
+              (toggleChange)="response.emit({ operation: 'check', data: item })"
+            ></mat-checkbox>
+            } } }
+          </div>
+        </ion-item>
+
+        @if(optionsItem.length != 0){
+        <ion-item-options>
+          <ion-item-option>Favorite</ion-item-option>
+          <ion-item-option color="danger">Delete</ion-item-option>
+        </ion-item-options>
+        }
+      </ion-item-sliding>
+      }
+    </ion-list>
+
+    <ion-infinite-scroll threshold="0px" (ionInfinite)="handleIonInfinite()">
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+    } @else {
+    <message-empty [nameRegister]="messageEmpty()"> </message-empty>
+    }
+    <ion-refresher slot="fixed" (ionRefresh)="handleRefresh()">
+      <ion-refresher-content> </ion-refresher-content>
     </ion-refresher>
   </div>
 </app-loading>

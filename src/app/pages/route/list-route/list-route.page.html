@@ -1,0 +1,20 @@
+<ion-header>
+  <app-nav-bar-simple
+    [urlBack]="is_master?'/DataBases':''"
+  ></app-nav-bar-simple>
+</ion-header>
+<ion-content [fullscreen]="true">
+  <app-list-item
+    [nameList]="'tableLocation'"
+    [heightRow]="15"
+    [sizeSummarizeWord]="150"
+    [messageEmpty]="'rutas'"
+    [pipe]="routePipe"
+    [pipeOpc]="0"
+    [columns]="columns"
+    (response)="selectColumn($event)"
+    (changePage)="changePagination()"
+    [loading]="loading"
+    (refresh)="resetAndRefresh()"
+  ></app-list-item>
+</ion-content>

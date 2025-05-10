@@ -7,49 +7,62 @@ import { ViewDashboardPage } from './pages/dashboard/view-dashboard/view-dashboa
 import { noLoginGuard } from './guards/authentication/no-login.guard';
 
 const routes: Routes = [
-    {
-      path: '',
-      component: RootPage,
-      children: [
-        {
-          path: '',
-          redirectTo: 'Authentication/Login',
-          pathMatch: 'full'
-        },
-        {
-          path: 'DashBoard',
-          component: ViewDashboardPage,
-          canActivate: [LoginGuard],
-          children: [
-        
-          ],
-        },
-        {
-          path: 'Authentication',
-          canActivate: [noLoginGuard],
-          loadChildren: () =>
-            import('./routing/authentication/authentication-routing.module').then(
-              (routes) => routes.AuthenticationRoutes
-            ),
-        },
-        {
-          path: 'DataBases',
-          canActivate: [LoginGuard],
-          loadChildren: () =>
-            import('./routing/database/database-routing.module').then(
-              (routes) => routes.DataBaseRoutes
-            ),
-        },
-        { path: '**', pathMatch: 'full', component: NoFoundPage },
-      ],
-    }
- 
+  {
+    path: '',
+    component: RootPage,
+    children: [
+      {
+        path: '',
+        redirectTo: 'Authentication/Login',
+        pathMatch: 'full',
+      },
+      {
+        path: 'DashBoard',
+        component: ViewDashboardPage,
+        canActivate: [LoginGuard],
+        children: [
+          {
+            path: 'Counters',
+            loadChildren: () =>
+              import('./routing/counter/counter-routing.module').then(
+                (routes) => routes.CounterRoutes
+              ),
+          },
+        ],
+      },
+      {
+        path: 'Authentication',
+        canActivate: [noLoginGuard],
+        loadChildren: () =>
+          import('./routing/authentication/authentication-routing.module').then(
+            (routes) => routes.AuthenticationRoutes
+          ),
+      },
+      {
+        path: 'DataBases',
+        canActivate: [LoginGuard],
+        loadChildren: () =>
+          import('./routing/database/database-routing.module').then(
+            (routes) => routes.DataBaseRoutes
+          ),
+      },
+      {
+        path: 'Routes',
+        canActivate: [LoginGuard],
+        loadChildren: () =>
+          import('./routing/route/route-routing.module').then(
+            (routes) => routes.RouteRoutes
+          ),
+      },
+      { path: '**', pathMatch: 'full', component: NoFoundPage },
+    ],
+  },
 ];
 
 @NgModule({
   imports: [
-    RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })
+    RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules }),
   ],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

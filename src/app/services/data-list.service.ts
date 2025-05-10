@@ -60,10 +60,12 @@ export class DataListService {
     return data;
   }
 
-  updateDataList(dataPage: DataPage, data: any[], name: string = ''): DataPage {
+  updateDataList(dataPage: DataPage, list: any[], name: string = ''): DataPage {
     dataPage.dataPaginator.offset += dataPage.dataPaginator.pageSize;
-    dataPage.dataTable.dataSourceFilter = data;
-    dataPage.refresh = data.length !== 0;
+    dataPage.dataTable.dataSourceFilter = [
+      ...dataPage.dataTable.dataSourceFilter,
+      ...list,
+    ];
 
     this.listInformationService.refreshData$.emit({
       data: dataPage.dataTable,

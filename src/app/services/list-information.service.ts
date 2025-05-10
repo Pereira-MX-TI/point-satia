@@ -6,7 +6,6 @@ import { DataListDTO } from '../models/shared/dataListDTO';
 })
 export class ListInformationService {
   refreshData$: EventEmitter<DataListDTO> = new EventEmitter<DataListDTO>();
-  changePage$: EventEmitter<void> = new EventEmitter<void>();
 
   dataInput$: EventEmitter<string> = new EventEmitter<string>();
   autoComplete$: EventEmitter<string[]> = new EventEmitter<string[]>();

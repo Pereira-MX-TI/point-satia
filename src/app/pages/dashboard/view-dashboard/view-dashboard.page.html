@@ -8,11 +8,17 @@
 </ion-menu>
 <div class="ion-page" id="main-content">
   <ion-header>
-    <ion-toolbar>
+    <ion-toolbar class="nav">
       <ion-buttons slot="start">
         <ion-menu-button></ion-menu-button>
       </ion-buttons>
+
+      <ion-title slot="end" class="title">
+        @if(currentLocation){ {{currentLocation.name | summarizeWord:50 }} }
+      </ion-title>
     </ion-toolbar>
   </ion-header>
-  <ion-content class="ion-padding">  </ion-content>
+  <ion-content class="ion-padding">
+    <ion-router-outlet></ion-router-outlet>
+  </ion-content>
 </div>
