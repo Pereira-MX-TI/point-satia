@@ -1,0 +1,19 @@
+<ion-content [@fadeInOut]>
+  <app-loading [view]="loading" [download]="true">
+    <div class="container">
+      <ion-img
+        class="ion-img"
+        onerror="this.src='assets/default.jpg'"
+        src="assets/upload_icon.png"
+      ></ion-img>
+      <p>
+        Se incluirán en la subida todos los medidores que contengan
+        geolocalización o imágenes asociadas.
+      </p>
+
+      <ion-button class="primary" (click)="register()">
+        Iniciar Subida
+      </ion-button>
+    </div>
+  </app-loading>
+</ion-content>

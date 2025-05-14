@@ -1,6 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import { inject, Injectable } from '@angular/core';
-import { LocalStorageService } from '../services/local-storage.service';
+import { IonicStorageService } from '../services/ionic-storage.service';
 import { Router } from '@angular/router';
 import { Account } from '../models/authentication/account';
 
@@ -8,23 +8,26 @@ import { Account } from '../models/authentication/account';
   providedIn: 'root',
 })
 export class LoginObservable {
-  private readonly localStorageService = inject(LocalStorageService);
-  private readonly router = inject(Router);
+  private readonly ionicStorageService: IonicStorageService =
+    inject(IonicStorageService);
+  private readonly router: Router = inject(Router);
 
   private dataSubject = new BehaviorSubject<Account | null>(null);
   data$ = this.dataSubject.asObservable();
 
-  checkLocalStoreData(): void {
-    if (this.localStorageService.exist('cacc')) {
-      const data: Account = this.localStorageService.view('cacc');
-      this.dataSubject.next(data);
-    }
+  async checkLocalStoreData(): Promise<void> {
+    const dataStore = await this.ionicStorageService.get('cacc');
+
+    if (!dataStore) return;
+
+    const data: Account = dataStore;
+    this.dataSubject.next(data);
   }
 
   updateData(data: Account | null): void {
-    if (data) this.localStorageService.save('cacc', data);
+    if (data) this.ionicStorageService.set('cacc', data);
     else {
-      this.localStorageService.remove(['cacc', 'vLoc']);
+      this.ionicStorageService.remove('cacc');
       this.router.navigate(['/Authentication/Login']);
     }
 

@@ -1,0 +1,43 @@
+<ion-content class="container" [@fadeInOut]>
+  <form class="container_info" [formGroup]="formGroup">
+    <mat-form-field>
+      <mat-label>Contador</mat-label>
+      <input type="text" matInput formControlName="counter_serie" readonly />
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Sección</mat-label>
+      <input type="text" matInput formControlName="section" readonly />
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Ubicación</mat-label>
+      <textarea
+        type="text"
+        matInput
+        formControlName="address"
+        readonly
+      ></textarea>
+    </mat-form-field>
+  </form>
+
+  @if(viewFormGps){
+  <form class="container_gps" [formGroup]="formGroup">
+    <mat-form-field>
+      <mat-label>Latitud</mat-label>
+      <input type="text" matInput formControlName="latitude" readonly />
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Longitud</mat-label>
+      <input type="text" matInput formControlName="longitude" readonly />
+    </mat-form-field>
+    <ion-button class="location" expand="full" (click)="myLocation()">
+      Obtener ubicación actual
+      <ion-icon name="locate"></ion-icon>
+    </ion-button>
+  </form>
+  }
+
+  <div class="container_photo"></div>
+</ion-content>

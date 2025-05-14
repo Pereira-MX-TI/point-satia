@@ -1,6 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MaterialComponents } from 'src/app/material/material.module';
@@ -16,14 +22,7 @@ import { Router } from '@angular/router';
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
   standalone: true,
-  imports: [
-    MaterialComponents,
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    FormsModule,
-    ReactiveFormsModule,
-  ],
+  imports: [MaterialComponents, IonicModule, FormsModule, ReactiveFormsModule],
   animations: [
     trigger('fadeInOut', [
       transition(':enter', [
@@ -34,9 +33,8 @@ import { Router } from '@angular/router';
     ]),
   ],
 })
-export class LoginPage  {
-
-  httpAuthService:HttpAuthService = inject(HttpAuthService);
+export class LoginPage {
+  httpAuthService: HttpAuthService = inject(HttpAuthService);
   private loginObservable: LoginObservable = inject(LoginObservable);
   private snackBar: MatSnackBar = inject(MatSnackBar);
   private router: Router = inject(Router);
@@ -48,7 +46,6 @@ export class LoginPage  {
   private formBuilder: FormBuilder = inject(FormBuilder);
 
   constructor() {
-
     this.formGroup = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
@@ -73,14 +70,15 @@ export class LoginPage  {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe(
         ({ data }) => {
+          const account: Account = data;
 
-          const account:Account = data;
-
-          if(account.user.type_user.id == 1 ){
+          if (account.user.type_user.id == 1) {
             this.loginObservable.updateData(account);
             this.router.navigateByUrl('/DataBases');
-          }else if(account.user.type_user.id == 4 || account.user.type_user.id == 6){
-           
+          } else if (
+            account.user.type_user.id == 4 ||
+            account.user.type_user.id == 6
+          ) {
             if (account.quantity_locations == 0) {
               this.snackBar.open('El usuario no tiene rutas', '', {
                 duration: 2500,
@@ -88,12 +86,10 @@ export class LoginPage  {
               });
               return;
             }
-  
+
             this.loginObservable.updateData(account);
             this.router.navigateByUrl('/DashBoard/Routes');
-
-          }
-          else{
+          } else {
             this.snackBar.open('Usuario no valido', '', {
               duration: 2500,
               panelClass: ['snackBar_error'],
@@ -108,5 +104,4 @@ export class LoginPage  {
         }
       );
   }
-
 }

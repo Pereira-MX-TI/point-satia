@@ -10,3 +10,79 @@
     font-size: 0.9rem;
     --color: rgba(var(--color-new-3-1));
 }
+
+.nav .top,
+.nav .bottom{
+    width: 100%;
+    display: flex;
+}
+
+.nav .top{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav .bottom{
+    border-top: solid 0.1rem rgba(var(--color-new-1-2));
+    padding: 0.5rem;
+    height: 4rem;
+    display: flex;
+}
+
+.btn_menu{
+    color: rgba(var(--color-new-1-1)) !important;
+}
+
+.ion-img{
+    width: 5rem;
+    height: 100%;
+    object-fit: contain;
+    padding: 0.5rem;
+}
+
+.item {
+    width: 100%;
+    height: 4rem;
+    padding: 0.75rem 0;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-bottom: solid 0.15rem rgba(var(--color-new-4-2),0.05);
+  }
+  
+  .item img {
+    margin-left: 0.75rem;
+    object-fit: contain;
+    width: 3rem;
+    height: 100%;
+    cursor: pointer;
+  }
+  
+  .item label {
+    margin-left: 0.75rem;
+    color: rgb(var(--color-new-1-1)) !important;
+    cursor: pointer;
+  
+    flex-grow: 10;
+  }
+
+  .list .item:hover{
+    opacity: 0.85;
+  }
+
+  
+.totalRecords{
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+
+    *{
+        font-size: 0.7rem;  
+        --color: rgba(var(--color-new-3-1));
+    }
+}

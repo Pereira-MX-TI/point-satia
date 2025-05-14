@@ -1,3 +1,4 @@
+import { trigger, transition, style, animate } from '@angular/animations';
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
@@ -22,6 +23,15 @@ import { SharePanelService } from 'src/app/services/panel-share.service';
   styleUrls: ['./list-database.page.scss'],
   standalone: true,
   imports: [IonicModule, NavBarSimpleComponent, ListItemComponent],
+  animations: [
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('0.5s', style({ opacity: 1 })),
+      ]),
+      transition(':leave', [animate('0.5s', style({ opacity: 0 }))]),
+    ]),
+  ],
 })
 export class ListDatabasePage implements OnInit, OnDestroy {
   private router: Router = inject(Router);
@@ -130,7 +140,7 @@ export class ListDatabasePage implements OnInit, OnDestroy {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe(
         ({ data }) => {
-          const { list } = data;
+          const { list, totalRecords } = data;
 
           this.dataPage = this.dataListService.updateDataList(
             this.dataPage,

@@ -54,3 +54,8 @@
     --color-new-7-1: 228, 201, 50; /*rgb(228, 201, 50);*/
     --color-new-8-1: 25, 82, 11; /* rgb(25, 82, 11);*/
   }
+
+  .primary{
+    --background: rgb(var(--color-new-1-1)) !important;
+    --color: rgb(var(--color-new-3-1)) !important;
+}

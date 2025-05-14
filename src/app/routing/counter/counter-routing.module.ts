@@ -1,26 +1,29 @@
 import { Routes } from '@angular/router';
-import { ListGpsCounterPage } from 'src/app/pages/counter/list-gps-counter/list-gps-counter.page';
-import { ListPhotosCounterPage } from 'src/app/pages/counter/list-photos-counter/list-photos-counter.page';
-import { TabCounterPage } from 'src/app/pages/counter/tab-counter/tab-counter.page';
+import { AddGpsPhotoCounterPage } from 'src/app/pages/counter/add-gps-photo-counter/add-gps-photo-counter.page';
+import { DownloadCounterPage } from 'src/app/pages/counter/download-counter/download-counter.page';
+import { ListCounterPage } from 'src/app/pages/counter/list-counter/list-counter.page';
+import { UploadCounterPage } from 'src/app/pages/counter/upload-counter/upload-counter.page';
 
 export const CounterRoutes: Routes = [
   {
     path: '',
-    component: TabCounterPage,
-    children: [
-      {
-        path: '',
-        redirectTo: 'Gps',
-        pathMatch: 'full',
-      },
-      {
-        path: 'Gps',
-        component: ListGpsCounterPage,
-      },
-      {
-        path: 'Photos',
-        component: ListPhotosCounterPage,
-      },
-    ],
+    redirectTo: 'List',
+    pathMatch: 'full',
+  },
+  {
+    path: 'List',
+    component: ListCounterPage,
+  },
+  {
+    path: 'Download',
+    component: DownloadCounterPage,
+  },
+  {
+    path: 'Upload',
+    component: UploadCounterPage,
+  },
+  {
+    path: 'AddGpsAndPhoto',
+    component: AddGpsPhotoCounterPage,
   },
 ];

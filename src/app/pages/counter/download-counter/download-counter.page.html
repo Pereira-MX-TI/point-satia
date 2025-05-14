@@ -1,0 +1,19 @@
+<ion-content [@fadeInOut]>
+  <app-loading [view]="loading" [download]="true">
+    <div class="container">
+      <ion-img
+        class="ion-img"
+        onerror="this.src='assets/default.jpg'"
+        src="assets/download_icon.png"
+      ></ion-img>
+      <p>
+        Se incluirán en la descarga todos los medidores que carezcan de
+        geolocalización o imágenes asociadas.
+      </p>
+
+      <ion-button class="primary" (click)="register()">
+        Iniciar descarga
+      </ion-button>
+    </div>
+  </app-loading>
+</ion-content>

@@ -78,6 +78,28 @@ export class HttpRouteService {
       );
   }
 
+  autoCompletedPhotosCounterByRoute(dto: {
+    word: string;
+    route_id: number | string;
+  }): Observable<any> {
+    let params = new HttpParams();
+    params = params.append(
+      'data',
+      btoa(this.cryptoService.encrypted(dto)).replace(new RegExp('/', 'g'), '~')
+    );
+
+    return this.httpClient
+      .get<any>(`${this.url_api}/locations/autoCompletedPhotosCounterByRoute`, {
+        params,
+        headers: { opc: '1' },
+      })
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          return this.errorHttpService.getError(error);
+        })
+      );
+  }
+
   getLocations(dto: {
     offset?: number;
     limit?: number;
@@ -121,6 +143,32 @@ export class HttpRouteService {
 
     return this.httpClient
       .get<any>(`${this.url_api}/locations/gpsCounterByRoute`, {
+        params,
+        headers: { opc: '1' },
+      })
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          return this.errorHttpService.getError(error);
+        })
+      );
+  }
+
+  photosCounterByRoute(dto: {
+    offset?: number;
+    limit?: number;
+    option: 0 | 1;
+    totalRecords?: boolean;
+    search?: string;
+    route_id: number | string;
+  }): Observable<any> {
+    let params = new HttpParams();
+    params = params.append(
+      'data',
+      btoa(this.cryptoService.encrypted(dto)).replace(new RegExp('/', 'g'), '~')
+    );
+
+    return this.httpClient
+      .get<any>(`${this.url_api}/locations/photosCounterByRoute`, {
         params,
         headers: { opc: '1' },
       })

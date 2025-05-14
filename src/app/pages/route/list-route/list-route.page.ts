@@ -13,10 +13,11 @@ import { RouteObservable } from 'src/app/observables/route.observable';
 import { RoutePipe } from 'src/app/pipes/route/route.pipe';
 import { DataListService } from 'src/app/services/data-list.service';
 import { ListInformationService } from 'src/app/services/list-information.service';
-import { LocalStorageService } from 'src/app/services/local-storage.service';
 import { SharePanelService } from 'src/app/services/panel-share.service';
 import { HttpRouteService } from 'src/app/services/route/http-route.service';
 import { IonicModule } from '@ionic/angular';
+import { ResponseListItem } from 'src/app/models/response-list-item.model';
+import { IonicStorageService } from 'src/app/services/ionic-storage.service';
 
 @Component({
   selector: 'app-list-route',
@@ -35,6 +36,8 @@ import { IonicModule } from '@ionic/angular';
   ],
 })
 export class ListRoutePage implements OnInit, OnDestroy {
+  private readonly ionicStorageService: IonicStorageService =
+    inject(IonicStorageService);
   private dataListService: DataListService = inject(DataListService);
   private httpRouteService: HttpRouteService = inject(HttpRouteService);
   private snackBar: MatSnackBar = inject(MatSnackBar);
@@ -43,8 +46,6 @@ export class ListRoutePage implements OnInit, OnDestroy {
   );
   private router: Router = inject(Router);
   private sharePanelService: SharePanelService = inject(SharePanelService);
-  private localStorageService: LocalStorageService =
-    inject(LocalStorageService);
   private routeObservable: RouteObservable = inject(RouteObservable);
   private loginObservable: LoginObservable = inject(LoginObservable);
 
@@ -58,8 +59,6 @@ export class ListRoutePage implements OnInit, OnDestroy {
   totalRecords: boolean = true;
 
   constructor() {
-    this.localStorageService.removeAllLogin();
-
     this.columns = [
       {
         id: crypto.randomUUID(),
@@ -178,11 +177,21 @@ export class ListRoutePage implements OnInit, OnDestroy {
       );
   }
 
-  selectColumn({ data, operation }: any): void {
-    if (operation !== 'view') return;
-
+  selectColumn({ data, operation }: ResponseListItem): void {
+    if (operation !== 'view') {
+      return;
+    }
     this.routeObservable.updateData(data);
-    this.router.navigateByUrl('DashBoard/Counters');
+
+    const nameStore: string = atob(data.name);
+    this.ionicStorageService.get(nameStore).then((dataStore: any) => {
+      if (!dataStore) {
+        this.router.navigateByUrl('DashBoard/Counters/Download');
+        return;
+      }
+
+      this.router.navigateByUrl('DashBoard/Counters/List');
+    });
   }
 
   resetAndRefresh(): void {

@@ -1,21 +1,75 @@
-<ion-menu contentId="main-content">
+<ion-menu #ionMenu contentId="main-content">
   <ion-header>
-    <ion-toolbar>
-      <ion-title>Menu Content</ion-title>
+    <ion-toolbar class="nav">
+      <ion-title slot="start" class="title">
+        @if(currentLocation){ {{currentLocation.name | summarizeWord:50 }} }
+      </ion-title>
+
+      <ion-img
+        slot="end"
+        class="ion-img"
+        onerror="this.src='assets/default.jpg'"
+        [src]="routePipe.transform(currentLocation, 0, 'logo')"
+      ></ion-img>
     </ion-toolbar>
   </ion-header>
-  <ion-content class="ion-padding">This is the menu content.</ion-content>
+  <ion-content class="ion-padding">
+    @for (itrItem of listNav; track itrItem){
+    <div class="item" (click)="ionMenu.close()" [routerLink]="itrItem.url">
+      <img
+        [alt]="itrItem.title"
+        onerror="this.src='assets/default.jpg'"
+        [src]="itrItem.img"
+      />
+      <label>{{ itrItem.title }}</label>
+    </div>
+    }
+  </ion-content>
 </ion-menu>
 <div class="ion-page" id="main-content">
   <ion-header>
     <ion-toolbar class="nav">
-      <ion-buttons slot="start">
-        <ion-menu-button></ion-menu-button>
-      </ion-buttons>
+      <div class="top">
+        <ion-buttons>
+          <ion-menu-button></ion-menu-button>
+        </ion-buttons>
 
-      <ion-title slot="end" class="title">
-        @if(currentLocation){ {{currentLocation.name | summarizeWord:50 }} }
-      </ion-title>
+        <ion-buttons>
+          <ion-button class="button" (click)="openSearchModal()">
+            <ion-icon name="search"></ion-icon>
+          </ion-button>
+          <ion-button
+            class="button"
+            [matMenuTriggerFor]="settingMenu"
+            #menuTriggerSetting="matMenuTrigger"
+          >
+            <ion-icon name="ellipsis-vertical"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+
+        <mat-menu #settingMenu="matMenu" yPosition="above">
+          <button
+            class="btn_menu"
+            type="button"
+            mat-button
+            (click)="closeSession()"
+          >
+            Cerrar sesión
+          </button>
+        </mat-menu>
+      </div>
+      <div class="bottom">
+        <ion-title class="title">
+          @if(currentLocation){ {{currentLocation.name | summarizeWord:50 }} }
+        </ion-title>
+
+        @if(totalRecords){
+        <div class="totalRecords">
+          <ion-title>{{"Sin gps: "+totalRecords.gps}}</ion-title>
+          <ion-title>{{"Sin fotos: "+totalRecords.photo}}</ion-title>
+        </div>
+        }
+      </div>
     </ion-toolbar>
   </ion-header>
   <ion-content class="ion-padding">

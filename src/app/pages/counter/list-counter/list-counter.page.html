@@ -1,6 +1,6 @@
-<ion-content class="ion-padding">
+<ion-content [@fadeInOut]>
   <app-list-item
-    [nameList]="'tableCounter'"
+    [nameList]="'tableGpsCounter'"
     [messageEmpty]="'contadores'"
     [pipe]="counterPipe"
     [pipeOpc]="0"
@@ -8,6 +8,8 @@
     (response)="selectColumn($event)"
     (changePage)="changePagination()"
     (refresh)="resetAndRefresh()"
+    [viewIonInfiniteScroll]="false"
     [loading]="loading"
+    [alarm]="true"
   ></app-list-item>
 </ion-content>

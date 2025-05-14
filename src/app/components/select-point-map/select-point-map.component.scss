@@ -1,0 +1,41 @@
+
+.container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.location{
+  --color: rgba(var(--color-new-3-1)) !important;
+  --background: rgba(var(--color-new-1-1)) !important;
+}
+
+::ng-deep .map {
+  width: 100% !important;
+  height: 90% !important;
+}
+
+::ng-deep .ol-zoom {
+  top: 2 !important;
+  width: 1.45rem !important;
+}
+
+::ng-deep .ol-zoom button {
+  width: 95% !important;
+  color: rgba(var(--color-new-3-1)) !important;
+  background-color: rgba(var(--color-new-1-1),0.75) !important;
+}
+
+::ng-deep .ol-zoom button:hover {
+  outline: none !important;
+  border: none !important;
+  background-color: rgba(var(--color-new-1-1)) !important;
+}
+
+@media screen and (max-width: 767px) {
+
+}
+
+@media screen and (min-width: 768px) {
+
+}

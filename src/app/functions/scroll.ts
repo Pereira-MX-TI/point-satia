@@ -1,4 +1,4 @@
-import { LocalStorageService } from '../services/local-storage.service';
+import { IonicStorageService } from '../services/ionic-storage.service';
 
 export function scrollTo(element: HTMLElement, to: number, duration: number) {
   const start = element.scrollTop;
@@ -34,19 +34,21 @@ export function easeInOutQuad(
 }
 
 export function restoreScroll(
-  localStorageService: LocalStorageService,
+  ionicStorageService: IonicStorageService,
   nameList: string,
   containerList: any,
   time: number
-): number {
-  if (!localStorageService.exist(nameList)) return 0;
-  const positionScroll = Number(localStorageService.view(nameList));
-  localStorageService.remove([nameList]);
+): void {
+  ionicStorageService.get(nameList).then((dataStore: any) => {
+    if (!dataStore) return 0;
+    const positionScroll = Number(dataStore);
+    ionicStorageService.remove(nameList);
 
-  setTimeout(() => {
-    scrollTo(containerList.nativeElement, positionScroll, time);
-    containerList.nativeElement.scrollTop += positionScroll;
-  }, time);
+    setTimeout(() => {
+      scrollTo(containerList.nativeElement, positionScroll, time);
+      containerList.nativeElement.scrollTop += positionScroll;
+    }, time);
 
-  return positionScroll;
+    return positionScroll;
+  });
 }

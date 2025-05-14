@@ -1,9 +1,9 @@
-<ion-header>
+<ion-header [@fadeInOut]>
   <app-nav-bar-simple
     [urlBack]="is_master?'/DataBases':''"
   ></app-nav-bar-simple>
 </ion-header>
-<ion-content [fullscreen]="true">
+<ion-content [@fadeInOut]>
   <app-list-item
     [nameList]="'tableLocation'"
     [heightRow]="15"

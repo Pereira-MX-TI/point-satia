@@ -1,0 +1,17 @@
+<section
+  class="container"
+  (click)="useMap = true"
+  (mouseenter)="useMap = useMap ? true : false"
+  (mouseleave)="useMap = false"
+>
+  <div
+    [id]="config.id"
+    class="map"
+    [style.pointer-events]="useMap ? 'auto' : 'none'"
+  ></div>
+
+  <ion-button class="location" expand="full" (click)="myLocation()">
+    Obtener mi ubicación
+    <ion-icon name="locate"></ion-icon>
+  </ion-button>
+</section>
