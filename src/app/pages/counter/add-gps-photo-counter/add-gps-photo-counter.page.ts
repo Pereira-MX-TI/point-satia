@@ -9,8 +9,10 @@ import {
 import { ActivatedRoute } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { Subscription } from 'rxjs';
+import { CarouselImageComponent } from 'src/app/components/carousel-image/carousel-image.component';
 import { initializeListSubscription } from 'src/app/functions/subscription-list.function';
 import { MaterialComponents } from 'src/app/material/material.module';
+import { AttachFile } from 'src/app/models/attach-file.model';
 import { Location_route } from 'src/app/models/route/location_route.model';
 import { RouteObservable } from 'src/app/observables/route.observable';
 import { FileService } from 'src/app/services/file.service';
@@ -20,7 +22,13 @@ import { FileService } from 'src/app/services/file.service';
   templateUrl: './add-gps-photo-counter.page.html',
   styleUrls: ['./add-gps-photo-counter.page.scss'],
   standalone: true,
-  imports: [MaterialComponents, IonicModule, FormsModule, ReactiveFormsModule],
+  imports: [
+    MaterialComponents,
+    IonicModule,
+    FormsModule,
+    ReactiveFormsModule,
+    CarouselImageComponent,
+  ],
   animations: [
     trigger('fadeInOut', [
       transition(':enter', [
@@ -38,6 +46,7 @@ export class AddGpsPhotoCounterPage implements OnInit, OnDestroy {
   private activatedRoute: ActivatedRoute = inject(ActivatedRoute);
   public fileService: FileService = inject(FileService);
 
+  files: AttachFile[] = [];
   listSubscription: Subscription[];
   currentLocation: Location_route | null = null;
   viewFormGps: boolean = false;

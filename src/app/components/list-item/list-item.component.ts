@@ -25,6 +25,7 @@ import { DataPaginator } from 'src/app/models/shared/dataPaginator';
 import { LoadingComponent } from '../loading/loading.component';
 import { MessageEmptyComponent } from '../message-empty/message-empty.component';
 import { IonicModule, IonInfiniteScroll, IonRefresher } from '@ionic/angular';
+import { NetworkStatusService } from 'src/app/services/network-status.service';
 
 @Component({
   selector: 'app-list-item',
@@ -43,7 +44,7 @@ import { IonicModule, IonInfiniteScroll, IonRefresher } from '@ionic/angular';
 })
 export class ListItemComponent implements OnInit, OnDestroy {
   dialog: Dialog = inject(Dialog);
-
+  networkStatusService: NetworkStatusService = inject(NetworkStatusService);
   activatedRoute: ActivatedRoute = inject(ActivatedRoute);
   private dataListService: DataListService = inject(DataListService);
 
@@ -77,18 +78,20 @@ export class ListItemComponent implements OnInit, OnDestroy {
   viewIonInfiniteScroll = input<boolean>(true);
 
   positionScroll: number = 0;
+  online: boolean = true;
 
   @ViewChild(IonRefresher) ionRefresher: IonRefresher | null = null;
   @ViewChild(IonInfiniteScroll) ionInfiniteScroll: IonInfiniteScroll | null =
     null;
 
   constructor() {
-    this.listSubscription = initializeListSubscription(3);
+    this.listSubscription = initializeListSubscription(2);
     this.paginator = this.dataListService.buildDataPaginator();
   }
 
   ngOnInit(): void {
     this.subscriptionListInformation();
+    this.subscriptionStatusNetwork();
   }
 
   ngOnDestroy() {
@@ -120,6 +123,13 @@ export class ListItemComponent implements OnInit, OnDestroy {
 
         this.items = dataSourceFilter;
         this.paginator = paginator;
+      });
+  }
+
+  subscriptionStatusNetwork() {
+    this.listSubscription[1] =
+      this.networkStatusService.networkStatus$.subscribe((status: boolean) => {
+        this.online = status;
       });
   }
 

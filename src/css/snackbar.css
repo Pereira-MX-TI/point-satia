@@ -1,0 +1,30 @@
+.mat-mdc-snack-bar-container .mdc-snackbar__surface {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  font-size: 10rem;
+  background-color: transparent !important;
+}
+
+.snackBar_error {
+  background: rgba(var(--color-new-6-1)) !important;
+}
+
+.snackBar_success {
+  background: rgba(var(--color-new-8-1)) !important;
+}
+
+.snackBar_warning {
+  background: var(--warining) !important;
+}
+
+.snackBar_success .mat-mdc-snack-bar-label .mdc-snackbar__label,
+.snackBar_error .mat-mdc-snack-bar-label .mdc-snackbar__label {
+  color: rgba(var(--color-new-3-1)) !important;
+}
+
+.snackBar_warning .mat-mdc-snack-bar-label .mdc-snackbar__label {
+  font-weight: bolder;
+  color: rgba(var(--color-new-4-1)) !important;
+}

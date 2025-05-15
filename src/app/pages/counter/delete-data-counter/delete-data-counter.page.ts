@@ -7,14 +7,15 @@ import { LoadingComponent } from 'src/app/components/loading/loading.component';
 import { initializeListSubscription } from 'src/app/functions/subscription-list.function';
 import { Location_route } from 'src/app/models/route/location_route.model';
 import { RouteObservable } from 'src/app/observables/route.observable';
+import { IonicStorageService } from 'src/app/services/ionic-storage.service';
 import { ListInformationService } from 'src/app/services/list-information.service';
 import { NetworkStatusService } from 'src/app/services/network-status.service';
 import { HttpRouteService } from 'src/app/services/route/http-route.service';
 
 @Component({
-  selector: 'app-upload-counter',
-  templateUrl: './upload-counter.page.html',
-  styleUrls: ['./upload-counter.page.scss'],
+  selector: 'app-delete-data-counter',
+  templateUrl: './delete-data-counter.page.html',
+  styleUrls: ['./delete-data-counter.page.scss'],
   standalone: true,
   imports: [IonicModule, LoadingComponent],
   animations: [
@@ -27,63 +28,35 @@ import { HttpRouteService } from 'src/app/services/route/http-route.service';
     ]),
   ],
 })
-export class UploadCounterPage implements OnInit {
+export class DeleteCounterPage {
   private listInformationService: ListInformationService = inject(
     ListInformationService
   );
-
-  currentLocation: Location_route | null;
   private routeObservable: RouteObservable = inject(RouteObservable);
   private alertController: AlertController = inject(AlertController);
-  networkStatusService: NetworkStatusService = inject(NetworkStatusService);
-
+  private readonly ionicStorageService: IonicStorageService =
+    inject(IonicStorageService);
   loading: boolean = false;
-  online: boolean = true;
-  listSubscription: Subscription[];
+  currentLocation: Location_route | null = null;
 
   constructor() {
     this.currentLocation = this.routeObservable.getData();
-    this.listSubscription = initializeListSubscription(1);
-  }
-
-  ngOnInit() {
-    this.subscriptionStatusNetwork();
-  }
-
-  ngOnDestroy(): void {
-    this.listSubscription.forEach((itrSub) => {
-      itrSub.unsubscribe();
-    });
-  }
-
-  subscriptionStatusNetwork() {
-    this.listSubscription[0] =
-      this.networkStatusService.networkStatus$.subscribe((status) => {
-        this.online = status;
-      });
-  }
-
-  register(): void {
-    if (!this.online) {
-      this.offlineAlert();
-      return;
-    }
-
-    this.loading = true;
-    if (!this.currentLocation) return;
   }
 
   async presentAlert() {
     const alert = await this.alertController.create({
-      header: 'Descarga',
+      header: 'Eliminación',
       backdropDismiss: false,
-      message: 'Se ha subido toda la información correctamente',
+      message: '¿Desea continuar con la eliminación?',
       buttons: [
         {
           text: 'Cerrar',
           role: 'cancel',
+        },
+        {
+          text: 'Aceptar',
           handler: () => {
-            this.listInformationService.totalRecords$.emit();
+            this.deleteStore();
           },
         },
       ],
@@ -92,11 +65,20 @@ export class UploadCounterPage implements OnInit {
     await alert.present();
   }
 
-  async offlineAlert() {
+  deleteStore(): void {
+    if (!this.currentLocation) return;
+    const nameStore: string = `route-${this.currentLocation.id}`;
+
+    this.ionicStorageService.remove(nameStore);
+    this.listInformationService.totalRecords$.emit();
+    this.successDeleteAlert();
+  }
+
+  async successDeleteAlert() {
     const alert = await this.alertController.create({
-      header: 'Offline',
+      header: 'Eliminación',
       backdropDismiss: false,
-      message: 'Es necesario conexión a internet para la descarga.',
+      message: 'Se ha eliminado toda la información correctamente',
       buttons: [
         {
           text: 'Cerrar',

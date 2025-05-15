@@ -15,7 +15,7 @@ import { LoginObservable } from 'src/app/observables/login.observable';
 import { DatabasePipe } from 'src/app/pipes/data-base/database.pipe';
 import { DataListService } from 'src/app/services/data-list.service';
 import { HttpDataBaseService } from 'src/app/services/database/http-database.service';
-import { SharePanelService } from 'src/app/services/panel-share.service';
+import { ListInformationService } from 'src/app/services/list-information.service';
 
 @Component({
   selector: 'app-list-database',
@@ -40,7 +40,9 @@ export class ListDatabasePage implements OnInit, OnDestroy {
   private loginObservable: LoginObservable = inject(LoginObservable);
   httpDataBaseService: HttpDataBaseService = inject(HttpDataBaseService);
   private dataListService: DataListService = inject(DataListService);
-  private sharePanelService: SharePanelService = inject(SharePanelService);
+  private listInformationService: ListInformationService = inject(
+    ListInformationService
+  );
 
   listSubscription: Subscription[];
   dataPage: DataPage;
@@ -86,11 +88,11 @@ export class ListDatabasePage implements OnInit, OnDestroy {
   }
 
   private subscriptionDataInput(): void {
-    this.listSubscription[0] = this.sharePanelService.dataInput$
+    this.listSubscription[0] = this.listInformationService.dataInput$
       .pipe(debounceTime(500))
       .subscribe((value: string) => {
         if (!value || value.trim() == '') {
-          this.sharePanelService.autoComplete$.emit([]);
+          this.listInformationService.autoComplete$.emit([]);
           return;
         }
 
@@ -100,17 +102,19 @@ export class ListDatabasePage implements OnInit, OnDestroy {
             const listAutocompleted: string[] = Object.keys(data).map(
               (itr) => data[itr]
             );
-            this.sharePanelService.autoComplete$.emit(listAutocompleted);
+            this.listInformationService.autoComplete$.emit(listAutocompleted);
           });
       });
   }
 
   private subscriptionSearch(): void {
-    this.listSubscription[1] = this.sharePanelService.search$.subscribe(
+    this.listSubscription[1] = this.listInformationService.search$.subscribe(
       (response: string) => {
+        this.loading = true;
+        this.dataPage = this.dataListService.buildDataList();
         this.dataPage.dataPaginator.search = response;
 
-        this.changePagination();
+        this.refresh();
       }
     );
   }
@@ -119,12 +123,6 @@ export class ListDatabasePage implements OnInit, OnDestroy {
     this.listSubscription[2] = this.loginObservable.data$.subscribe(
       (res: Account | null) => (this.account = res)
     );
-  }
-
-  changePagination(): void {
-    this.dataPage.dataPaginator.pageIndex++;
-
-    this.refresh();
   }
 
   refresh(): void {
@@ -140,7 +138,7 @@ export class ListDatabasePage implements OnInit, OnDestroy {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe(
         ({ data }) => {
-          const { list, totalRecords } = data;
+          const { list } = data;
 
           this.dataPage = this.dataListService.updateDataList(
             this.dataPage,
@@ -151,7 +149,7 @@ export class ListDatabasePage implements OnInit, OnDestroy {
         () => {
           this.snackBar.open('Error de carga', '', {
             duration: 2500,
-            panelClass: ['snackBar_error'],
+            panelClass: 'snackBar_error',
           });
         }
       );
@@ -171,9 +169,10 @@ export class ListDatabasePage implements OnInit, OnDestroy {
   }
 
   resetAndRefresh(): void {
-    this.sharePanelService.resetInput$.emit();
+    this.listInformationService.resetInput$.emit();
     this.dataPage = this.dataListService.buildDataList();
 
+    this.loading = true;
     this.refresh();
   }
 }

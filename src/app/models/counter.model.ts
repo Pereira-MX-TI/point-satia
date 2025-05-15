@@ -3,7 +3,7 @@ export interface Counter {
   address: string;
   meter_serial: string;
   section: string;
-  photos?: any[];
+  photos?: number;
   gps?: {
     id: string | number;
     latitude: number;

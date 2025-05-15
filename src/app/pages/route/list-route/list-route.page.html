@@ -1,6 +1,6 @@
 <ion-header [@fadeInOut]>
   <app-nav-bar-simple
-    [urlBack]="is_master?'/DataBases':''"
+    [urlBack]="is_master && online?'/DataBases':''"
   ></app-nav-bar-simple>
 </ion-header>
 <ion-content [@fadeInOut]>
@@ -13,8 +13,9 @@
     [pipeOpc]="0"
     [columns]="columns"
     (response)="selectColumn($event)"
-    (changePage)="changePagination()"
+    (changePage)="refresh()"
     [loading]="loading"
     (refresh)="resetAndRefresh()"
+    [viewIonInfiniteScroll]="online"
   ></app-list-item>
 </ion-content>

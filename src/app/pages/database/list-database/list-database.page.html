@@ -9,7 +9,7 @@
     [pipeOpc]="0"
     [columns]="columns"
     (response)="selectColumn($event)"
-    (changePage)="changePagination()"
+    (changePage)="refresh()"
     (refresh)="resetAndRefresh()"
     [loading]="loading"
   ></app-list-item>

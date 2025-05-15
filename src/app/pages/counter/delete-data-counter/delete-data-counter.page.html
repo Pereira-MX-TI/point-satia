@@ -1,0 +1,16 @@
+<ion-content [@fadeInOut]>
+  <app-loading [view]="loading">
+    <div class="container">
+      <ion-img
+        class="ion-img"
+        onerror="this.src='assets/default.jpg'"
+        src="assets/delete_icon.png"
+      ></ion-img>
+      <p>Se eliminara todos las geolocalizaciónes y fotos recolectadas.</p>
+
+      <ion-button class="primary" (click)="presentAlert()">
+        Iniciar Eliminación
+      </ion-button>
+    </div>
+  </app-loading>
+</ion-content>

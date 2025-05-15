@@ -7,6 +7,7 @@ import { Subscription, debounceTime, filter, finalize } from 'rxjs';
 import { ListItemComponent } from 'src/app/components/list-item/list-item.component';
 import { initializeListSubscription } from 'src/app/functions/subscription-list.function';
 import { ColumnConfig } from 'src/app/models/column-config.model';
+import { DataFilter } from 'src/app/models/DataFilterCounter.model';
 import { ResponseListItem } from 'src/app/models/response-list-item.model';
 import { Location_route } from 'src/app/models/route/location_route.model';
 import { DataPage } from 'src/app/models/shared/dataPage';
@@ -14,13 +15,8 @@ import { RouteObservable } from 'src/app/observables/route.observable';
 import { CounterPipe } from 'src/app/pipes/counter/counter.pipe';
 import { DataListService } from 'src/app/services/data-list.service';
 import { IonicStorageService } from 'src/app/services/ionic-storage.service';
-import { SharePanelService } from 'src/app/services/panel-share.service';
+import { ListInformationService } from 'src/app/services/list-information.service';
 
-interface DataFilter {
-  meter_serial: string;
-  address: string;
-  section: string;
-}
 @Component({
   selector: 'app-list-counter',
   templateUrl: './list-counter.page.html',
@@ -40,8 +36,11 @@ interface DataFilter {
 export class ListCounterPage implements OnInit, OnDestroy {
   private router: Router = inject(Router);
   private dataListService: DataListService = inject(DataListService);
-  private sharePanelService: SharePanelService = inject(SharePanelService);
   private routeObservable: RouteObservable = inject(RouteObservable);
+  private listInformationService: ListInformationService = inject(
+    ListInformationService
+  );
+
   private readonly ionicStorageService: IonicStorageService =
     inject(IonicStorageService);
 
@@ -98,26 +97,26 @@ export class ListCounterPage implements OnInit, OnDestroy {
   }
 
   private subscriptionDataInput(): void {
-    this.listSubscription[0] = this.sharePanelService.dataInput$
+    this.listSubscription[0] = this.listInformationService.dataInput$
       .pipe(debounceTime(500))
       .subscribe((value: string) => {
         if (!value || value.trim() == '') {
-          this.sharePanelService.autoComplete$.emit([]);
+          this.listInformationService.autoComplete$.emit([]);
           return;
         }
 
         if (!this.currentLocation) {
-          this.sharePanelService.autoComplete$.emit([]);
+          this.listInformationService.autoComplete$.emit([]);
           return;
         }
 
         const listWord: string[] = [];
-        const nameStore: string = atob(this.currentLocation.name);
+        const nameStore: string = `route-${this.currentLocation?.id}`;
 
         this.ionicStorageService.get(nameStore).then((dataStore: any) => {
-          const {
-            gpsData: { list },
-          } = dataStore;
+          if (!dataStore) return;
+
+          const { list } = dataStore;
 
           list.forEach((itr: DataFilter) => {
             if (itr.meter_serial.toLowerCase().startsWith(value)) {
@@ -137,13 +136,13 @@ export class ListCounterPage implements OnInit, OnDestroy {
             new Set(listWord.map((word) => word.toLowerCase()))
           );
 
-          this.sharePanelService.autoComplete$.emit(uniqueListLowerCase);
+          this.listInformationService.autoComplete$.emit(uniqueListLowerCase);
         });
       });
   }
 
   private subscriptionSearch(): void {
-    this.listSubscription[1] = this.sharePanelService.search$.subscribe(
+    this.listSubscription[1] = this.listInformationService.search$.subscribe(
       (response: string) => {
         this.dataPage.dataPaginator.search = response;
         this.search();
@@ -158,22 +157,16 @@ export class ListCounterPage implements OnInit, OnDestroy {
   refresh(): void {
     if (!this.currentLocation) return;
 
-    const nameStore: string = atob(this.currentLocation.name);
+    const nameStore: string = `route-${this.currentLocation.id}`;
     this.ionicStorageService.get(nameStore).then((dataStore: any) => {
       if (!dataStore) {
         this.loading = false;
         return;
       }
 
-      const { list, totalRecords } = dataStore;
+      const { list } = dataStore;
 
       setTimeout(() => {
-        if (totalRecords) {
-          this.dataPage.dataPaginator = this.dataListService.changePaginator(
-            this.dataPage.dataPaginator,
-            totalRecords
-          );
-        }
         this.dataPage = this.dataListService.updateDataList(
           this.dataPage,
           list,
@@ -190,12 +183,12 @@ export class ListCounterPage implements OnInit, OnDestroy {
 
     this.loading = true;
     const listData: any[] = [];
-    const nameStore: string = atob(this.currentLocation.name);
+    const nameStore: string = `route-${this.currentLocation.id}`;
 
     this.ionicStorageService.get(nameStore).then((dataStore: any) => {
-      const {
-        gpsData: { list },
-      } = dataStore;
+      if (!dataStore) return;
+
+      const { list } = dataStore;
 
       list.forEach((itr: DataFilter) => {
         if (
@@ -238,7 +231,7 @@ export class ListCounterPage implements OnInit, OnDestroy {
   }
 
   resetAndRefresh(): void {
-    this.sharePanelService.resetInput$.emit();
+    this.listInformationService.resetInput$.emit();
     this.dataPage = this.dataListService.buildDataList();
 
     this.loading = true;

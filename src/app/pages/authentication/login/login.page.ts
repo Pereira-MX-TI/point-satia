@@ -11,18 +11,27 @@ import { IonicModule } from '@ionic/angular';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MaterialComponents } from 'src/app/material/material.module';
 import { HttpAuthService } from 'src/app/services/authentication/http-auth.service';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Account } from 'src/app/models/authentication/account';
 import { LoginObservable } from 'src/app/observables/login.observable';
 import { Router } from '@angular/router';
+import { NetworkStatusService } from 'src/app/services/network-status.service';
+import { LoadingComponent } from '../../../components/loading/loading.component';
+import { IonicStorageService } from 'src/app/services/ionic-storage.service';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
   standalone: true,
-  imports: [MaterialComponents, IonicModule, FormsModule, ReactiveFormsModule],
+  imports: [
+    MaterialComponents,
+    IonicModule,
+    FormsModule,
+    ReactiveFormsModule,
+    LoadingComponent,
+  ],
   animations: [
     trigger('fadeInOut', [
       transition(':enter', [
@@ -34,16 +43,21 @@ import { Router } from '@angular/router';
   ],
 })
 export class LoginPage {
+  private readonly ionicStorageService: IonicStorageService =
+    inject(IonicStorageService);
   httpAuthService: HttpAuthService = inject(HttpAuthService);
   private loginObservable: LoginObservable = inject(LoginObservable);
   private snackBar: MatSnackBar = inject(MatSnackBar);
   private router: Router = inject(Router);
+  private formBuilder: FormBuilder = inject(FormBuilder);
+  networkStatusService: NetworkStatusService = inject(NetworkStatusService);
 
   hide: boolean = true;
   loading: boolean = false;
   formGroup: FormGroup;
 
-  private formBuilder: FormBuilder = inject(FormBuilder);
+  subscription: Subscription = new Subscription();
+  online: boolean = true;
 
   constructor() {
     this.formGroup = this.formBuilder.group({
@@ -51,6 +65,26 @@ export class LoginPage {
       password: ['', Validators.required],
       token: ['-'],
     });
+  }
+
+  ngOnInit(): void {
+    this.subscriptionStatusNetwork();
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
+
+  subscriptionStatusNetwork() {
+    this.subscription = this.networkStatusService.networkStatus$.subscribe(
+      (status) => {
+        this.online = status;
+
+        this.formGroup
+          .get('password')
+          ?.setValue(status ? '' : '-', { emitEvent: false });
+      }
+    );
   }
 
   register(): void {
@@ -62,46 +96,114 @@ export class LoginPage {
     this.loading = true;
     const { email, password } = this.formGroup.getRawValue();
 
-    this.httpAuthService
-      .login({
-        email,
-        password,
-      })
-      .pipe(finalize(() => (this.loading = false)))
-      .subscribe(
-        ({ data }) => {
-          const account: Account = data;
-
-          if (account.user.type_user.id == 1) {
-            this.loginObservable.updateData(account);
-            this.router.navigateByUrl('/DataBases');
-          } else if (
-            account.user.type_user.id == 4 ||
-            account.user.type_user.id == 6
-          ) {
-            if (account.quantity_locations == 0) {
-              this.snackBar.open('El usuario no tiene rutas', '', {
-                duration: 2500,
-                panelClass: ['snackBar_error'],
-              });
-              return;
-            }
-
-            this.loginObservable.updateData(account);
-            this.router.navigateByUrl('/DashBoard/Routes');
-          } else {
-            this.snackBar.open('Usuario no valido', '', {
+    if (this.online) {
+      this.httpAuthService
+        .login({
+          email,
+          password,
+        })
+        .pipe(finalize(() => (this.loading = false)))
+        .subscribe(
+          ({ data }) => {
+            this.redirectPageByLogin(data);
+          },
+          () => {
+            this.snackBar.open('Usuario o Contraseña incorrecto', '', {
               duration: 2500,
-              panelClass: ['snackBar_error'],
+              panelClass: 'snackBar_error',
             });
           }
-        },
-        () => {
-          this.snackBar.open('Usuario o Contraseña incorrecto', '', {
+        );
+
+      return;
+    }
+
+    this.ionicStorageService.get('cacc-offline').then((res: Account | null) => {
+      if (!res) {
+        this.snackBar.open(
+          'Inicie sesión una vez con conexión a internet',
+          '',
+          {
             duration: 2500,
-            panelClass: ['snackBar_error'],
-          });
-        }
-      );
+            panelClass: 'snackBar_error',
+          }
+        );
+
+        return;
+      }
+
+      if (email !== res.user.email) {
+        this.snackBar.open('Usuario o Contraseña incorrecto', '', {
+          duration: 2500,
+          panelClass: 'snackBar_error',
+        });
+
+        return;
+      }
+
+      this.redirectPageByLogin(res);
+    });
+  }
+
+  redirectPageByLogin(account: Account): void {
+    this.ionicStorageService.get('routes').then((res) => {
+      switch (account.user.type_user.id) {
+        case 1:
+          {
+            if (this.online) {
+              this.loginObservable.updateData(account);
+              this.router.navigateByUrl('/DataBases');
+            } else if (res) {
+              this.loginObservable.updateData(account);
+              this.router.navigateByUrl('/Routes');
+            } else {
+              this.snackBar.open('Es necesario descargar 1 ruta', '', {
+                duration: 2500,
+                panelClass: 'snackBar_error',
+              });
+            }
+          }
+          break;
+        case 2:
+        case 4:
+          {
+            if (this.online && account.quantity_locations == 0) {
+              this.snackBar.open('El usuario no tiene rutas', '', {
+                duration: 2500,
+                panelClass: 'snackBar_error',
+              });
+            } else if (this.online) {
+              this.loginObservable.updateData(account);
+              this.router.navigateByUrl('/Routes');
+            } else if (res) {
+              this.loginObservable.updateData(account);
+              this.router.navigateByUrl('/Routes');
+            } else {
+              this.snackBar.open('Es necesario descargar 1 ruta', '', {
+                duration: 2500,
+                panelClass: 'snackBar_error',
+              });
+            }
+          }
+          break;
+
+        case 6:
+          {
+            if (this.online) {
+              this.loginObservable.updateData(account);
+              this.router.navigateByUrl('/Routes');
+            } else if (res) {
+              this.loginObservable.updateData(account);
+              this.router.navigateByUrl('/Routes');
+            } else {
+              this.snackBar.open('Es necesario descargar 1 ruta', '', {
+                duration: 2500,
+                panelClass: 'snackBar_error',
+              });
+            }
+          }
+          break;
+      }
+    });
   }
 }

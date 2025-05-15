@@ -25,8 +25,10 @@ export class LoginObservable {
   }
 
   updateData(data: Account | null): void {
-    if (data) this.ionicStorageService.set('cacc', data);
-    else {
+    if (data) {
+      this.ionicStorageService.set('cacc-offline', data);
+      this.ionicStorageService.set('cacc', data);
+    } else {
       this.ionicStorageService.remove('cacc');
       this.router.navigate(['/Authentication/Login']);
     }

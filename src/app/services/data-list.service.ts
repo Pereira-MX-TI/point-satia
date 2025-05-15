@@ -16,7 +16,6 @@ export class DataListService {
     return {
       search: '',
       quantityTotal: 0,
-      pageIndex: 0,
       offset: 0,
       pageSize: size,
       limit: size,
@@ -33,7 +32,6 @@ export class DataListService {
       dataPaginator: {
         search: '',
         quantityTotal: 0,
-        pageIndex: 0,
         offset: 0,
         pageSize: size,
         limit: size,
@@ -43,15 +41,6 @@ export class DataListService {
         opcFill: 0,
       },
     };
-  }
-
-  updatePaginator(data: DataPaginator, pageEvent: PageEvent): DataPaginator {
-    data.pageIndex = pageEvent.pageIndex;
-    data.pageSize = pageEvent.pageSize;
-    data.limit = pageEvent.pageSize;
-    data.offset = pageEvent.pageIndex * pageEvent.pageSize;
-
-    return data;
   }
 
   changePaginator(data: DataPaginator, quantity: number = 0): DataPaginator {
@@ -76,17 +65,5 @@ export class DataListService {
     });
 
     return dataPage;
-  }
-
-  paginatorManual(list: any[], pageSize: number, pageIndex: number): any[] {
-    const newList: any[] = [];
-    const start: number = pageSize * pageIndex;
-    const end: number = pageSize * (pageIndex + 1);
-
-    for (let index = start; index < end; index++) {
-      if (index < list.length) newList.push(list[index]);
-    }
-
-    return newList;
   }
 }

@@ -39,15 +39,6 @@
 
                 }
               </div>
-
-              <!-- <span
-                class="status"
-                [style.background-color]="
-                  checkData(item)
-                    ? 'rgba(var(--color-new-6-1),0.8)'
-                    : 'rgba(var(--color-new-8-1),0.8)'
-                "
-              ></span> -->
               }
             </span>
 
@@ -89,7 +80,11 @@
               class="ion-img"
               [style.grid-column]="'span ' + column.size"
               onerror="this.src='assets/default.jpg'"
-              [src]="pipe().transform(item, pipeOpc(), column.name)"
+              [src]="
+                online
+                  ? pipe().transform(item, pipeOpc(), column.name)
+                  : 'assets/default.jpg'
+              "
             ></ion-img>
             } @case ('radio'){
             <mat-slide-toggle

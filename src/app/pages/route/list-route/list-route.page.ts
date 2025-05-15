@@ -1,5 +1,11 @@
 import { trigger, transition, style, animate } from '@angular/animations';
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { debounceTime, finalize, Subscription } from 'rxjs';
@@ -13,11 +19,12 @@ import { RouteObservable } from 'src/app/observables/route.observable';
 import { RoutePipe } from 'src/app/pipes/route/route.pipe';
 import { DataListService } from 'src/app/services/data-list.service';
 import { ListInformationService } from 'src/app/services/list-information.service';
-import { SharePanelService } from 'src/app/services/panel-share.service';
 import { HttpRouteService } from 'src/app/services/route/http-route.service';
 import { IonicModule } from '@ionic/angular';
 import { ResponseListItem } from 'src/app/models/response-list-item.model';
 import { IonicStorageService } from 'src/app/services/ionic-storage.service';
+import { NetworkStatusService } from 'src/app/services/network-status.service';
+import { Location_route } from 'src/app/models/route/location_route.model';
 
 @Component({
   selector: 'app-list-route',
@@ -35,7 +42,7 @@ import { IonicStorageService } from 'src/app/services/ionic-storage.service';
     ]),
   ],
 })
-export class ListRoutePage implements OnInit, OnDestroy {
+export class ListRoutePage implements OnInit, AfterViewInit, OnDestroy {
   private readonly ionicStorageService: IonicStorageService =
     inject(IonicStorageService);
   private dataListService: DataListService = inject(DataListService);
@@ -45,9 +52,9 @@ export class ListRoutePage implements OnInit, OnDestroy {
     ListInformationService
   );
   private router: Router = inject(Router);
-  private sharePanelService: SharePanelService = inject(SharePanelService);
   private routeObservable: RouteObservable = inject(RouteObservable);
   private loginObservable: LoginObservable = inject(LoginObservable);
+  networkStatusService: NetworkStatusService = inject(NetworkStatusService);
 
   columns: ColumnConfig[] = [];
 
@@ -56,7 +63,7 @@ export class ListRoutePage implements OnInit, OnDestroy {
   dataPage: DataPage;
   is_master: boolean;
   loading: boolean = true;
-  totalRecords: boolean = true;
+  online: boolean = true;
 
   constructor() {
     this.columns = [
@@ -92,7 +99,13 @@ export class ListRoutePage implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.subscriptionDataInput();
     this.subscriptionSearch();
-    this.refresh();
+    this.subscriptionStatusNetwork();
+  }
+
+  ngAfterViewInit() {
+    setTimeout(() => {
+      this.refresh();
+    }, 500);
   }
 
   ngOnDestroy(): void {
@@ -110,71 +123,130 @@ export class ListRoutePage implements OnInit, OnDestroy {
           return;
         }
 
-        this.httpRouteService
-          .autoCompletedLocation({ word: value })
-          .subscribe(({ data }) => {
-            const listAutocompleted: string[] = Object.keys(data).map(
-              (itr) => data[itr]
-            );
-            this.listInformationService.autoComplete$.emit(listAutocompleted);
+        if (this.online) {
+          this.httpRouteService
+            .autoCompletedLocation({ word: value })
+            .subscribe(({ data }) => {
+              const listAutocompleted: string[] = Object.keys(data).map(
+                (itr) => data[itr]
+              );
+              this.listInformationService.autoComplete$.emit(listAutocompleted);
+            });
+
+          return;
+        }
+
+        const listWord: string[] = [];
+
+        this.ionicStorageService.get('routes').then(({ list }) => {
+          list.forEach((itr: Location_route) => {
+            if (itr.name.toLowerCase().startsWith(value)) {
+              listWord.push(itr.name);
+            }
           });
+
+          const uniqueListLowerCase: string[] = Array.from(
+            new Set(listWord.map((word) => word.toLowerCase()))
+          );
+
+          this.listInformationService.autoComplete$.emit(uniqueListLowerCase);
+        });
       });
   }
 
   private subscriptionSearch(): void {
     this.listSubscription[1] = this.listInformationService.search$.subscribe(
       (response: string) => {
+        this.loading = true;
+        this.dataPage = this.dataListService.buildDataList();
         this.dataPage.dataPaginator.search = response;
 
-        this.changePagination();
+        if (this.online) this.refresh();
+        else this.searchOffline();
       }
     );
   }
 
-  changePagination(): void {
-    this.dataPage.dataPaginator.pageIndex++;
-
-    this.refresh();
+  subscriptionStatusNetwork() {
+    this.listSubscription[2] =
+      this.networkStatusService.networkStatus$.subscribe((status) => {
+        this.online = status;
+      });
   }
 
   refresh(): void {
-    this.httpRouteService
-      .getLocations({
-        offset: this.dataPage.dataPaginator.offset,
-        limit: this.dataPage.dataPaginator.limit,
-        option: 'pagination',
-        ...(this.totalRecords ? { totalRecords: true } : {}),
-        addLocation: true,
-        ...(this.dataPage.dataPaginator.search === ''
-          ? {}
-          : { search: this.dataPage.dataPaginator.search }),
-      })
-      .pipe(finalize(() => (this.loading = false)))
-      .subscribe(
-        ({ data }) => {
-          const { totalRecords, list, addLocation } = data;
+    if (this.online) {
+      this.httpRouteService
+        .getLocations({
+          offset: this.dataPage.dataPaginator.offset,
+          limit: this.dataPage.dataPaginator.limit,
+          option: 'pagination',
+          addLocation: true,
+          ...(this.dataPage.dataPaginator.search === ''
+            ? {}
+            : { search: this.dataPage.dataPaginator.search }),
+        })
+        .pipe(finalize(() => (this.loading = false)))
+        .subscribe(
+          ({ data }) => {
+            const { list } = data;
 
-          if (totalRecords) {
-            this.dataPage.dataPaginator = this.dataListService.changePaginator(
-              this.dataPage.dataPaginator,
-              totalRecords
+            this.dataPage = this.dataListService.updateDataList(
+              this.dataPage,
+              list,
+              'tableLocation'
             );
+
+            this.ionicStorageService.set('routes', {
+              list: this.dataPage.dataTable.dataSourceFilter,
+            });
+          },
+          () => {
+            this.snackBar.open('Error de carga', '', {
+              duration: 2000,
+              panelClass: 'snackBar_error',
+            });
           }
-          this.dataPage = this.dataListService.updateDataList(
-            this.dataPage,
-            list,
-            'tableLocation'
-          );
-          this.dataPage.btnAction = { add: addLocation };
-          this.totalRecords = false;
-        },
-        () => {
-          this.snackBar.open('Error de carga', '', {
-            duration: 2000,
-            panelClass: ['snackBar_error'],
-          });
-        }
+        );
+
+      return;
+    }
+    this.ionicStorageService.get('routes').then(({ list }) => {
+      this.dataPage = this.dataListService.updateDataList(
+        this.dataPage,
+        list,
+        'tableLocation'
       );
+
+      this.loading = false;
+    });
+  }
+
+  searchOffline(): void {
+    this.loading = true;
+    const listData: any[] = [];
+
+    this.ionicStorageService.get('routes').then((dataStore: any) => {
+      const { list } = dataStore;
+
+      list.forEach((itr: Location_route) => {
+        if (
+          itr.name.toLowerCase().includes(this.dataPage.dataPaginator.search)
+        ) {
+          listData.push(itr);
+        }
+      });
+
+      setTimeout(() => {
+        this.dataPage = this.dataListService.updateDataList(
+          this.dataPage,
+          listData,
+          'tableLocation'
+        );
+
+        this.loading = false;
+      }, 1000);
+    });
   }
 
   selectColumn({ data, operation }: ResponseListItem): void {
@@ -195,9 +267,10 @@ export class ListRoutePage implements OnInit, OnDestroy {
   }
 
   resetAndRefresh(): void {
-    this.sharePanelService.resetInput$.emit();
+    this.listInformationService.resetInput$.emit();
     this.dataPage = this.dataListService.buildDataList();
 
+    this.loading = true;
     this.refresh();
   }
 }

@@ -1,0 +1,49 @@
+<section>
+  <input
+    #fileBtn
+    type="file"
+    hidden
+    class="hideInput"
+    (change)="fileChanged($event.target)"
+    accept=".png,.jpg,.jpeg,.PNG,.JPG,.JPEG"
+  />
+
+  <div class="content">
+    @if(listFile.length === 0){
+    <message-empty [nameRegister]="'imágenes'"> </message-empty>
+    }@else {
+    <owl-carousel-o #owlCarousel [options]="customOptions">
+      @for (itrFile of listFile; track itrFile.id; let index = $index){
+      <ng-template carouselSlide>
+        <div class="slide">
+          @if(attach()){
+          <mat-icon (click)="deleteFile(itrFile, index)">delete</mat-icon>
+          }
+          <img
+            [src]="
+              itrFile['data'] != '' ? itrFile['data'] : 'assets/default.jpg'
+            "
+            [title]="itrFile.name"
+            [alt]="itrFile.name"
+            onerror="this.src='assets/default.jpg'"
+            loading="eager"
+            priority
+          />
+        </div>
+      </ng-template>
+      }
+    </owl-carousel-o>
+    }
+  </div>
+
+  @if(listFile.length < 3 && attach()){
+  <button
+    mat-button
+    type="button"
+    class="secondary_btn"
+    (click)="fileService.clearInputFile(fileBtn); fileBtn.click()"
+  >
+    Adjuntar imagen
+  </button>
+  }
+</section>

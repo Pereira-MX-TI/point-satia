@@ -39,5 +39,11 @@
   </form>
   }
 
-  <div class="container_photo"></div>
+  <div class="container_photo">
+    <app-carousel-image
+      [attach]="true"
+      (output_files)="files = $event"
+      [input_files]="files"
+    ></app-carousel-image>
+  </div>
 </ion-content>

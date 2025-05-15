@@ -3,7 +3,7 @@ import { Gps } from '../shared/gps';
 import { Img } from '../shared/img';
 
 export interface Location_route {
-  id: number;
+  id: number | string;
   name: string;
   type: string;
   type_location: Type_location;

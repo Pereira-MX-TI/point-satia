@@ -1,13 +1,21 @@
 import { trigger, transition, style, animate } from '@angular/animations';
-import { Component, inject, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AlertController, IonicModule } from '@ionic/angular';
-import { finalize, zip } from 'rxjs';
+import { finalize, Subscription, zip } from 'rxjs';
 import { LoadingComponent } from 'src/app/components/loading/loading.component';
+import { initializeListSubscription } from 'src/app/functions/subscription-list.function';
 import { Location_route } from 'src/app/models/route/location_route.model';
 import { RouteObservable } from 'src/app/observables/route.observable';
 import { IonicStorageService } from 'src/app/services/ionic-storage.service';
 import { ListInformationService } from 'src/app/services/list-information.service';
+import { NetworkStatusService } from 'src/app/services/network-status.service';
 import { HttpRouteService } from 'src/app/services/route/http-route.service';
 
 @Component({
@@ -26,27 +34,51 @@ import { HttpRouteService } from 'src/app/services/route/http-route.service';
     ]),
   ],
 })
-export class DownloadCounterPage implements OnInit {
+export class DownloadCounterPage implements OnInit, OnDestroy {
   private listInformationService: ListInformationService = inject(
     ListInformationService
   );
   private httpRouteService: HttpRouteService = inject(HttpRouteService);
   private snackBar: MatSnackBar = inject(MatSnackBar);
   currentLocation: Location_route | null;
+  networkStatusService: NetworkStatusService = inject(NetworkStatusService);
   private routeObservable: RouteObservable = inject(RouteObservable);
   private alertController: AlertController = inject(AlertController);
   private readonly ionicStorageService: IonicStorageService =
     inject(IonicStorageService);
 
   loading: boolean = false;
+  online: boolean = true;
+  listSubscription: Subscription[];
 
   constructor() {
     this.currentLocation = this.routeObservable.getData();
+    this.listSubscription = initializeListSubscription(1);
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.subscriptionStatusNetwork();
+  }
+
+  ngOnDestroy(): void {
+    this.listSubscription.forEach((itrSub) => {
+      itrSub.unsubscribe();
+    });
+  }
+
+  subscriptionStatusNetwork() {
+    this.listSubscription[0] =
+      this.networkStatusService.networkStatus$.subscribe((status) => {
+        this.online = status;
+      });
+  }
 
   register(): void {
+    if (!this.online) {
+      this.offlineAlert();
+      return;
+    }
+
     this.loading = true;
     if (!this.currentLocation) return;
 
@@ -64,7 +96,7 @@ export class DownloadCounterPage implements OnInit {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe(
         (res: any[]) => {
-          const nameStore: string = atob(this.currentLocation!.name);
+          const nameStore: string = `route-${this.currentLocation?.id}`;
           const { list: gpsListSimple } = res[0].data;
           const { list: photoListSimple } = res[1].data;
 
@@ -84,7 +116,7 @@ export class DownloadCounterPage implements OnInit {
         () => {
           this.snackBar.open('Error de carga', '', {
             duration: 2500,
-            panelClass: ['snackBar_error'],
+            panelClass: 'snackBar_error',
           });
         }
       );
@@ -138,12 +170,7 @@ export class DownloadCounterPage implements OnInit {
       [...photoListStore, ...photoListToAdd]
     );
 
-    this.ionicStorageService.set(nameStore, {
-      list,
-      gpsTotalRecords: gpsListComplete.length,
-      photoTotalRecords: photoListComplete.length,
-    });
-
+    this.ionicStorageService.set(nameStore, { list });
     this.presentAlert();
   }
 
@@ -174,13 +201,7 @@ export class DownloadCounterPage implements OnInit {
 
     const list: Array<any> = this.mergeList(gpsListComplete, photoListComplete);
 
-    console.log(list);
-
-    this.ionicStorageService.set(nameStore, {
-      list,
-      gpsTotalRecords: gpsListComplete.length,
-      photoTotalRecords: photoListComplete.length,
-    });
+    this.ionicStorageService.set(nameStore, { list });
 
     this.presentAlert();
   }
@@ -197,6 +218,22 @@ export class DownloadCounterPage implements OnInit {
           handler: () => {
             this.listInformationService.totalRecords$.emit();
           },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  async offlineAlert() {
+    const alert = await this.alertController.create({
+      header: 'Offline',
+      backdropDismiss: false,
+      message: 'Es necesario conexión a internet para la descarga.',
+      buttons: [
+        {
+          text: 'Cerrar',
+          role: 'cancel',
         },
       ],
     });

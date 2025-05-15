@@ -36,13 +36,13 @@ export class ErrorFormService {
       case 415:
         this.matSnackBar.open('Limite de rutas excedido', '', {
           duration: 2000,
-          panelClass: ['snackBar_error'],
+          panelClass: 'snackBar_error',
         });
         break;
       case 416:
         this.matSnackBar.open('Medidores de agua excedido', '', {
           duration: 2000,
-          panelClass: ['snackBar_error'],
+          panelClass: 'snackBar_error',
         });
         break;
       case 417:
@@ -64,7 +64,7 @@ export class ErrorFormService {
       case 420:
         this.matSnackBar.open('El token ha expirado', '', {
           duration: 2000,
-          panelClass: ['snackBar_error'],
+          panelClass: 'snackBar_error',
         });
         break;
 
@@ -75,63 +75,63 @@ export class ErrorFormService {
       case 423:
         this.matSnackBar.open('Base de datos no existente', '', {
           duration: 2000,
-          panelClass: ['snackBar_error'],
+          panelClass: 'snackBar_error',
         });
         break;
 
       case 424:
         this.matSnackBar.open('Base de datos con rutas', '', {
           duration: 2000,
-          panelClass: ['snackBar_error'],
+          panelClass: 'snackBar_error',
         });
         break;
 
       case 425:
         this.matSnackBar.open('Ruta no existente', '', {
           duration: 2000,
-          panelClass: ['snackBar_error'],
+          panelClass: 'snackBar_error',
         });
         break;
 
       case 426:
         this.matSnackBar.open('Ruta con medidores', '', {
           duration: 2000,
-          panelClass: ['snackBar_error'],
+          panelClass: 'snackBar_error',
         });
         break;
 
       case 427:
         this.matSnackBar.open('Usuario no existente', '', {
           duration: 2000,
-          panelClass: ['snackBar_error'],
+          panelClass: 'snackBar_error',
         });
         break;
 
       case 428:
         this.matSnackBar.open('Usuario con cuentas', '', {
           duration: 2000,
-          panelClass: ['snackBar_error'],
+          panelClass: 'snackBar_error',
         });
         break;
 
       case 429:
         this.matSnackBar.open('Usuario con rutas a gestionar', '', {
           duration: 2000,
-          panelClass: ['snackBar_error'],
+          panelClass: 'snackBar_error',
         });
         break;
 
       case 430:
         this.matSnackBar.open('Sección no existente', '', {
           duration: 2000,
-          panelClass: ['snackBar_error'],
+          panelClass: 'snackBar_error',
         });
         break;
 
       case 431:
         this.matSnackBar.open('Sección con direcciones', '', {
           duration: 2000,
-          panelClass: ['snackBar_error'],
+          panelClass: 'snackBar_error',
         });
         break;
 
@@ -176,7 +176,7 @@ export class ErrorFormService {
       default:
         this.matSnackBar.open(message, '', {
           duration: 2000,
-          panelClass: ['snackBar_error'],
+          panelClass: 'snackBar_error',
         });
     }
   }

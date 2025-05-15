@@ -1,0 +1,60 @@
+::ng-deep app-carousel-image{
+    width:100% !important;
+    height: 100% !important;
+}
+section{
+    height: 100%;
+    width: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.content {
+    position: relative;
+    width: 100%;
+    flex-grow: 10;
+    height: 1rem;
+}
+
+
+
+.slide mat-icon{
+  cursor: pointer;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: rgba(var(--color-new-3-1));
+  padding: 0.25rem;
+  border-radius:50% ;
+
+  color: rgba(var(--color-new-1-1));
+}
+
+
+::ng-deep .owl-carousel,
+::ng-deep owl-carousel-o {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+::ng-deep owl-stage,
+::ng-deep owl-stage div,
+::ng-deep .owl-carousel .owl-stage-outer {
+  display: block !important;
+  height: 100% !important;
+}
+
+.slide {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative;
+}
+
+img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+}

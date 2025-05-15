@@ -35,7 +35,10 @@
               "node_modules/ol/ol.css",
               "@angular/material/prebuilt-themes/azure-blue.css",
               "src/global.scss",
-              "src/theme/variables.scss"
+              "src/theme/variables.scss",
+              "node_modules/viewerjs/dist/viewer.min.css",
+              "node_modules/ngx-owl-carousel-o/lib/styles/prebuilt-themes/owl.carousel.min.css",
+              "node_modules/ngx-owl-carousel-o/lib/styles/prebuilt-themes/owl.theme.default.min.css"
             ],
             "scripts": []
           },

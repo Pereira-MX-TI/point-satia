@@ -10,20 +10,21 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { initializeListSubscription } from 'src/app/functions/subscription-list.function';
 import { MaterialComponents } from 'src/app/material/material.module';
-import { SharePanelService } from 'src/app/services/panel-share.service';
+import { ListInformationService } from 'src/app/services/list-information.service';
 
 @Component({
   selector: 'app-search-autocomplete',
-  standalone:true,
+  standalone: true,
   imports: [MaterialComponents, FormsModule, ReactiveFormsModule],
   templateUrl: './search-autocomplete.component.html',
   styleUrls: ['./search-autocomplete.component.scss'],
 })
 export class SearchAutocompleteComponent implements OnInit, OnDestroy {
-  protected sharePanelService: SharePanelService = inject(SharePanelService);
   private activatedRoute: ActivatedRoute = inject(ActivatedRoute);
+  private listInformationService: ListInformationService = inject(
+    ListInformationService
+  );
   dialog: Dialog = inject(Dialog);
-
 
   @Input('backgroundColor') backgroundColor: string = 'var(--color3-1)';
 
@@ -42,22 +43,21 @@ export class SearchAutocompleteComponent implements OnInit, OnDestroy {
   }
 
   private subscriptionAutoComplete(): void {
-      this.listSubscription[0] = this.sharePanelService.autoComplete$.subscribe(
+    this.listSubscription[0] =
+      this.listInformationService.autoComplete$.subscribe(
         (response: string[]) => {
           this.listObservable = response;
         }
       );
-      return;
- 
+    return;
   }
 
   private subscriptionResetInput(): void {
-      this.listSubscription[1] = this.sharePanelService.resetInput$.subscribe(
-        () => {
-          this.formControl.reset();
-        }
-      );
-      return;
+    this.listSubscription[1] =
+      this.listInformationService.resetInput$.subscribe(() => {
+        this.formControl.reset();
+      });
+    return;
   }
 
   private subscriptionQueryParams(): void {
@@ -65,8 +65,8 @@ export class SearchAutocompleteComponent implements OnInit, OnDestroy {
       ({ pagination }) => {
         if (!pagination) return;
 
-        const {search} = JSON.parse(atob(pagination));
-        this.formControl.setValue(search,{emitEvent:false});
+        const { search } = JSON.parse(atob(pagination));
+        this.formControl.setValue(search, { emitEvent: false });
       }
     );
   }
@@ -82,20 +82,20 @@ export class SearchAutocompleteComponent implements OnInit, OnDestroy {
       this.listObservable = [];
       return;
     }
-    this.sharePanelService.dataInput$.emit(this.formControl.value);
+    this.listInformationService.dataInput$.emit(this.formControl.value);
   }
 
   setSearch(): void {
     if (this.formControl.invalid || !this.formControl.value) return;
 
-    this.sharePanelService.search$.emit(this.formControl.value);
+    this.listInformationService.search$.emit(this.formControl.value);
     this.dialog.closeAll();
   }
 
   setSearchAutoComplete(data: string): void {
     if (data == '') return;
 
-    this.sharePanelService.search$.emit(data);
+    this.listInformationService.search$.emit(data);
     this.dialog.closeAll();
   }
 }
