@@ -25,6 +25,8 @@ import { ResponseListItem } from 'src/app/models/response-list-item.model';
 import { IonicStorageService } from 'src/app/services/ionic-storage.service';
 import { NetworkStatusService } from 'src/app/services/network-status.service';
 import { Location_route } from 'src/app/models/route/location_route.model';
+import { CounterObservable } from 'src/app/observables/counters.observable';
+import { generateUUID } from 'src/app/functions/UUID.function';
 
 @Component({
   selector: 'app-list-route',
@@ -55,6 +57,7 @@ export class ListRoutePage implements OnInit, AfterViewInit, OnDestroy {
   private routeObservable: RouteObservable = inject(RouteObservable);
   private loginObservable: LoginObservable = inject(LoginObservable);
   networkStatusService: NetworkStatusService = inject(NetworkStatusService);
+  counterObservable: CounterObservable = inject(CounterObservable);
 
   columns: ColumnConfig[] = [];
 
@@ -68,21 +71,21 @@ export class ListRoutePage implements OnInit, AfterViewInit, OnDestroy {
   constructor() {
     this.columns = [
       {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         head: '',
         name: 'logo',
         type: 'img',
         size: 3,
       },
       {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         head: 'Nombre',
         name: 'name',
         type: 'text',
         size: 3,
       },
       {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         head: '',
         name: 'btn',
         type: 'btn',
@@ -137,6 +140,7 @@ export class ListRoutePage implements OnInit, AfterViewInit, OnDestroy {
         }
 
         const listWord: string[] = [];
+        value = value.toLowerCase();
 
         this.ionicStorageService.get('routes').then(({ list }) => {
           list.forEach((itr: Location_route) => {
@@ -224,7 +228,7 @@ export class ListRoutePage implements OnInit, AfterViewInit, OnDestroy {
 
   searchOffline(): void {
     this.loading = true;
-    const listData: any[] = [];
+    const listData: Location_route[] = [];
 
     this.ionicStorageService.get('routes').then((dataStore: any) => {
       const { list } = dataStore;
@@ -249,13 +253,16 @@ export class ListRoutePage implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  selectColumn({ data, operation }: ResponseListItem): void {
+  selectColumn({ data: route, operation }: ResponseListItem): void {
     if (operation !== 'view') {
       return;
     }
-    this.routeObservable.updateData(data);
 
-    const nameStore: string = atob(data.name);
+    this.routeObservable.updateData(route);
+    this.counterObservable.clearData();
+
+    const nameStore: string = `${route.name.replace(/\s+/g, '')}-${route.id}`;
+
     this.ionicStorageService.get(nameStore).then((dataStore: any) => {
       if (!dataStore) {
         this.router.navigateByUrl('DashBoard/Counters/Download');

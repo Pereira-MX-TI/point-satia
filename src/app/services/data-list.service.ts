@@ -46,8 +46,6 @@ export class DataListService {
   changePaginator(data: DataPaginator, quantity: number = 0): DataPaginator {
     data.quantityTotal = quantity;
 
-    this.listInformationService.totalRecords$.emit();
-
     return data;
   }
 

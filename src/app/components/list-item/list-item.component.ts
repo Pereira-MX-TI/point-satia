@@ -26,6 +26,7 @@ import { LoadingComponent } from '../loading/loading.component';
 import { MessageEmptyComponent } from '../message-empty/message-empty.component';
 import { IonicModule, IonInfiniteScroll, IonRefresher } from '@ionic/angular';
 import { NetworkStatusService } from 'src/app/services/network-status.service';
+import { AttachFile } from 'src/app/models/attach-file.model';
 
 @Component({
   selector: 'app-list-item',
@@ -66,7 +67,7 @@ export class ListItemComponent implements OnInit, OnDestroy {
   pipeOpc = input<number>();
   heightRow = input<number>(7.5);
   sizeSummarizeWord = input<number>(40);
-  download = input<boolean>(false);
+  animation = input<'download' | 'loading' | 'upload'>('loading');
   columns = input<ColumnConfig[]>([]);
   items: any[] = [];
   paginator: DataPaginator;
@@ -151,7 +152,7 @@ export class ListItemComponent implements OnInit, OnDestroy {
   }
 
   checkAlarmPhoto({ photos }: any): boolean {
-    if (photos && (photos as Array<any>).length === 0) {
+    if (photos != undefined) {
       return true;
     }
 
@@ -159,7 +160,7 @@ export class ListItemComponent implements OnInit, OnDestroy {
   }
 
   checkStatusAlarmPhoto({ photos }: any): string {
-    if (photos && (photos as Array<any>).length === 0) {
+    if (photos != undefined && (photos as Array<AttachFile>).length === 0) {
       return 'rgba(var(--color-new-6-1),0.8)';
     }
 
@@ -167,7 +168,7 @@ export class ListItemComponent implements OnInit, OnDestroy {
   }
 
   checkAlarmGps({ gps }: any): boolean {
-    if (gps && gps.latitude === 0 && gps.longitude === 0) {
+    if (gps != undefined) {
       return true;
     }
 
@@ -175,7 +176,7 @@ export class ListItemComponent implements OnInit, OnDestroy {
   }
 
   checkStatusAlarmGps({ gps }: any): string {
-    if (gps && gps.latitude === 0 && gps.longitude === 0) {
+    if (gps != undefined && gps.latitude === 0 && gps.longitude === 0) {
       return 'rgba(var(--color-new-6-1),0.8)';
     }
 

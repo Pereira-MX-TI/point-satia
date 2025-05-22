@@ -28,7 +28,7 @@
 </ion-menu>
 <div class="ion-page" id="main-content">
   <ion-header>
-    <ion-toolbar class="nav">
+    <ion-toolbar class="nav header">
       <div class="top">
         <ion-buttons>
           <ion-menu-button></ion-menu-button>
@@ -59,6 +59,13 @@
         </mat-menu>
       </div>
       <div class="bottom">
+        @if(router.url.includes('Counters/AddGpsAndPhoto')){
+        <ion-buttons>
+          <ion-button class="button" (click)="location.back()">
+            <ion-icon name="arrow-back"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+        }
         <ion-title class="title">
           @if(currentLocation){ {{currentLocation.name | summarizeWord:50 }} }
         </ion-title>

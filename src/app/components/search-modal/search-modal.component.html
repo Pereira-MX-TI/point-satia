@@ -1,6 +1,7 @@
 <section class="container_modal search">
   <div class="container_input">
-    <app-search-autocomplete></app-search-autocomplete>
+    <app-search-autocomplete
+      [valueSearch]="dataModal"
+    ></app-search-autocomplete>
   </div>
-  <mat-icon (click)="dialogRef.close(false)">close</mat-icon>
 </section>

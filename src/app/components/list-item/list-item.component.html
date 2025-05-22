@@ -1,4 +1,4 @@
-<app-loading [view]="loading()" [download]="download()">
+<app-loading [view]="loading()" [type]="animation()">
   <div [id]="nameList()" class="content_loader">
     @if(items.length != 0){
     <ion-list lass="body_list">
@@ -21,20 +21,12 @@
                 @if(checkAlarmPhoto(item)){
                 <ion-icon
                   name="camera"
-                  [style.color]="
-                    checkStatusAlarmPhoto(item)
-                      ? 'rgba(var(--color-new-6-1),0.8)'
-                      : 'rgba(var(--color-new-8-1),0.8)'
-                  "
+                  [style.color]="checkStatusAlarmPhoto(item)"
                 ></ion-icon>
                 } @if(checkAlarmGps(item)){
                 <ion-icon
                   name="location"
-                  [style.color]="
-                    checkStatusAlarmGps(item)
-                      ? 'rgba(var(--color-new-6-1),0.8)'
-                      : 'rgba(var(--color-new-8-1),0.8)'
-                  "
+                  [style.color]="checkStatusAlarmGps(item)"
                 ></ion-icon>
 
                 }

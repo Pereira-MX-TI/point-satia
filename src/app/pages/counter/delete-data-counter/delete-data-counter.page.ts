@@ -1,16 +1,13 @@
 import { trigger, transition, style, animate } from '@angular/animations';
-import { Component, inject, OnInit } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { AlertController, IonicModule } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { LoadingComponent } from 'src/app/components/loading/loading.component';
 import { initializeListSubscription } from 'src/app/functions/subscription-list.function';
 import { Location_route } from 'src/app/models/route/location_route.model';
+import { CounterObservable } from 'src/app/observables/counters.observable';
 import { RouteObservable } from 'src/app/observables/route.observable';
-import { IonicStorageService } from 'src/app/services/ionic-storage.service';
 import { ListInformationService } from 'src/app/services/list-information.service';
-import { NetworkStatusService } from 'src/app/services/network-status.service';
-import { HttpRouteService } from 'src/app/services/route/http-route.service';
 
 @Component({
   selector: 'app-delete-data-counter',
@@ -28,19 +25,35 @@ import { HttpRouteService } from 'src/app/services/route/http-route.service';
     ]),
   ],
 })
-export class DeleteCounterPage {
-  private listInformationService: ListInformationService = inject(
-    ListInformationService
-  );
+export class DeleteCounterPage implements OnInit, OnDestroy {
   private routeObservable: RouteObservable = inject(RouteObservable);
   private alertController: AlertController = inject(AlertController);
-  private readonly ionicStorageService: IonicStorageService =
-    inject(IonicStorageService);
+  counterObservable: CounterObservable = inject(CounterObservable);
+
   loading: boolean = false;
   currentLocation: Location_route | null = null;
+  listSubscription: Subscription[];
 
   constructor() {
-    this.currentLocation = this.routeObservable.getData();
+    this.listSubscription = initializeListSubscription(2);
+  }
+
+  ngOnInit() {
+    this.subscriptionRoute();
+  }
+
+  ngOnDestroy(): void {
+    this.listSubscription.forEach((itrSub) => {
+      itrSub.unsubscribe();
+    });
+  }
+
+  subscriptionRoute() {
+    this.listSubscription[0] = this.routeObservable.data$.subscribe(
+      (res: Location_route | null) => {
+        this.currentLocation = res;
+      }
+    );
   }
 
   async presentAlert() {
@@ -67,10 +80,12 @@ export class DeleteCounterPage {
 
   deleteStore(): void {
     if (!this.currentLocation) return;
-    const nameStore: string = `route-${this.currentLocation.id}`;
+    const nameStore: string = `${this.currentLocation.name.replace(
+      /\s+/g,
+      ''
+    )}-${this.currentLocation.id}`;
 
-    this.ionicStorageService.remove(nameStore);
-    this.listInformationService.totalRecords$.emit();
+    this.counterObservable.updateData(nameStore, null);
     this.successDeleteAlert();
   }
 

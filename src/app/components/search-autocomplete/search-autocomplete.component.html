@@ -1,7 +1,6 @@
-<section
-  class="filter_input"
->
+<section class="filter_input">
   <input
+    type="search"
     matInput
     placeholder="Buscar"
     [formControl]="formControl"
@@ -22,6 +21,9 @@
     }
   </mat-autocomplete>
 
-  <mat-icon (click)="setSearch()" class="icon-search">search</mat-icon>
+  @if(this.formControl.valid){
+  <ion-icon class="icon close" (click)="clearSearch()" name="close"></ion-icon>
+  }
 
+  <ion-icon class="icon" (click)="setSearch()" name="search"></ion-icon>
 </section>

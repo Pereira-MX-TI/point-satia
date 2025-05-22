@@ -12,12 +12,23 @@
     @if(listFile.length === 0){
     <message-empty [nameRegister]="'imágenes'"> </message-empty>
     }@else {
+
     <owl-carousel-o #owlCarousel [options]="customOptions">
       @for (itrFile of listFile; track itrFile.id; let index = $index){
       <ng-template carouselSlide>
         <div class="slide">
           @if(attach()){
-          <mat-icon (click)="deleteFile(itrFile, index)">delete</mat-icon>
+          <ion-icon
+            class="icon trash"
+            (click)="deleteFile(itrFile, index)"
+            name="trash"
+          ></ion-icon>
+
+          <ion-icon
+            class="icon expand"
+            (click)="visorImgService.viewImage(elementRef, itrFile)"
+            name="expand"
+          ></ion-icon>
           }
           <img
             [src]="
@@ -27,6 +38,7 @@
             [alt]="itrFile.name"
             onerror="this.src='assets/default.jpg'"
             loading="eager"
+            [id]="'img-' + itrFile?.id"
             priority
           />
         </div>
@@ -37,13 +49,20 @@
   </div>
 
   @if(listFile.length < 3 && attach()){
-  <button
-    mat-button
-    type="button"
-    class="secondary_btn"
-    (click)="fileService.clearInputFile(fileBtn); fileBtn.click()"
+
+  <!-- 
+        (click)="fileService.clearInputFile(fileBtn); fileBtn.click()"
+    (click)="takePhoto()" 
+    -->
+
+  <ion-button
+    class="take_photo"
+    expand="full"
+    (click)="handlePhotoClick(fileBtn)"
   >
-    Adjuntar imagen
-  </button>
+    Tomar foto
+    <ion-icon name="camera-outline"></ion-icon>
+  </ion-button>
+
   }
 </section>

@@ -20,9 +20,17 @@ export class LoadingComponent {
   view = input<boolean>(false);
 
   gif: string = 'assets/loaders/loading_5.gif';
-  @Input() set download(res: boolean) {
-    this.gif = res
-      ? 'assets/loaders/download.gif'
-      : 'assets/loaders/loading_5.gif';
+  @Input() set type(res: 'download' | 'loading' | 'upload') {
+    if (res === 'download') {
+      this.gif = 'assets/loaders/download.gif';
+      return;
+    }
+
+    if (res === 'upload') {
+      this.gif = 'assets/loaders/upload.gif';
+      return;
+    }
+
+    this.gif = 'assets/loaders/loading_5.gif';
   }
 }

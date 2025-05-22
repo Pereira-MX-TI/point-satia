@@ -26,8 +26,13 @@
   color: rgba(var(--color-new-4-1));
 }
 
-.icon-search {
+.icon {
   cursor: pointer;
-  border-left: solid 1px rgba(var(--color-new-3-2), 0.75) !important;
+  font-size: 1.5rem;
   color: rgba(var(--color-new-1-1)) !important;
+}
+
+.close{
+  margin: 0 1rem;
+  font-size: 1.25rem;
 }

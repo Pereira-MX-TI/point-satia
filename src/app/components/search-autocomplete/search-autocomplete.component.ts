@@ -1,12 +1,19 @@
 import { Dialog } from '@angular/cdk/dialog';
-import { Component, inject, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  Input,
+  input,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import {
   FormControl,
   FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { IonicModule } from '@ionic/angular';
 import { Subscription } from 'rxjs';
 import { initializeListSubscription } from 'src/app/functions/subscription-list.function';
 import { MaterialComponents } from 'src/app/material/material.module';
@@ -15,31 +22,29 @@ import { ListInformationService } from 'src/app/services/list-information.servic
 @Component({
   selector: 'app-search-autocomplete',
   standalone: true,
-  imports: [MaterialComponents, FormsModule, ReactiveFormsModule],
+  imports: [MaterialComponents, FormsModule, ReactiveFormsModule, IonicModule],
   templateUrl: './search-autocomplete.component.html',
   styleUrls: ['./search-autocomplete.component.scss'],
 })
 export class SearchAutocompleteComponent implements OnInit, OnDestroy {
-  private activatedRoute: ActivatedRoute = inject(ActivatedRoute);
   private listInformationService: ListInformationService = inject(
     ListInformationService
   );
   dialog: Dialog = inject(Dialog);
 
-  @Input('backgroundColor') backgroundColor: string = 'var(--color3-1)';
-
+  @Input('valueSearch') set valueSearch(res: string) {
+    this.formControl.setValue(res, { emitEvent: false });
+  }
   listObservable: string[] = [];
   formControl: FormControl = new FormControl('', Validators.required);
   listSubscription: Subscription[];
 
   constructor() {
-    this.listSubscription = initializeListSubscription(3);
+    this.listSubscription = initializeListSubscription(2);
   }
 
   ngOnInit(): void {
     this.subscriptionAutoComplete();
-    this.subscriptionResetInput();
-    this.subscriptionQueryParams();
   }
 
   private subscriptionAutoComplete(): void {
@@ -50,25 +55,6 @@ export class SearchAutocompleteComponent implements OnInit, OnDestroy {
         }
       );
     return;
-  }
-
-  private subscriptionResetInput(): void {
-    this.listSubscription[1] =
-      this.listInformationService.resetInput$.subscribe(() => {
-        this.formControl.reset();
-      });
-    return;
-  }
-
-  private subscriptionQueryParams(): void {
-    this.listSubscription[2] = this.activatedRoute.queryParams.subscribe(
-      ({ pagination }) => {
-        if (!pagination) return;
-
-        const { search } = JSON.parse(atob(pagination));
-        this.formControl.setValue(search, { emitEvent: false });
-      }
-    );
   }
 
   ngOnDestroy() {
@@ -97,5 +83,11 @@ export class SearchAutocompleteComponent implements OnInit, OnDestroy {
 
     this.listInformationService.search$.emit(data);
     this.dialog.closeAll();
+  }
+
+  clearSearch(): void {
+    this.formControl.setValue('', { emitEvent: false });
+    this.listInformationService.resetInput$.emit();
+    this.listObservable = [];
   }
 }

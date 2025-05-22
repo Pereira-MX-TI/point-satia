@@ -10,9 +10,12 @@ export const noLoginGuard: CanActivateFn = () => {
   const account: Account | null = loginObservable.getData();
 
   if (account) {
-    if(account.user.type_user.id == 1 ){
+    if (account.user.type_user.id == 1) {
       router.navigateByUrl('/DataBases');
-    }else if(account.user.type_user.id == 4 || account.user.type_user.id == 6){
+    } else if (
+      account.user.type_user.id == 4 ||
+      account.user.type_user.id == 6
+    ) {
       router.navigateByUrl('/Routes');
     }
     return false;

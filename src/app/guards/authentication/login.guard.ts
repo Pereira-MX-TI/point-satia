@@ -9,10 +9,10 @@ export const LoginGuard: CanActivateFn = () => {
 
   const account: Account | null = loginObservable.getData();
 
-  // if (!account) {
-  //   router.navigateByUrl('/');
-  //   return false;
-  // }
+  if (!account) {
+    router.navigateByUrl('/');
+    return false;
+  }
 
   return true;
 };

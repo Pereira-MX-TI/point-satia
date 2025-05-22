@@ -5,6 +5,7 @@ import {
   Input,
   input,
   ViewChild,
+  ElementRef,
 } from '@angular/core';
 import { AttachFile } from '../../models/attach-file.model';
 import { FileService } from '../../services/file.service';
@@ -20,14 +21,29 @@ import { CarouselDto } from '../../models/carousel-dto.model';
 import { OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { MessageEmptyComponent } from '../message-empty/message-empty.component';
+import { IonicModule, Platform } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+import { VisorImgService } from 'src/app/services/visor-img.service';
+import { PermissionService } from 'src/app/services/permission.service';
 
 @Component({
   selector: 'app-carousel-image',
-  imports: [MaterialComponents, MessageEmptyComponent, CarouselModule],
+  imports: [
+    MaterialComponents,
+    MessageEmptyComponent,
+    CarouselModule,
+    IonicModule,
+  ],
   templateUrl: './carousel-image.component.html',
   styleUrl: './carousel-image.component.scss',
 })
 export class CarouselImageComponent implements OnInit, OnDestroy {
+  public visorImgService: VisorImgService = inject(VisorImgService);
+  public elementRef: ElementRef = inject(ElementRef);
+
+  permissionService: PermissionService = inject(PermissionService);
+
+  public platform: Platform = inject(Platform);
   public fileService: FileService = inject(FileService);
   private matSnackBar: MatSnackBar = inject(MatSnackBar);
   public carouselInformationService: CarouselInformationService = inject(
@@ -93,6 +109,18 @@ export class CarouselImageComponent implements OnInit, OnDestroy {
     );
   }
 
+  handlePhotoClick(fileBtn: HTMLInputElement): void {
+    if (
+      Capacitor.isNativePlatform() &&
+      (this.platform.is('android') || this.platform.is('ios'))
+    ) {
+      this.takePhoto();
+    } else {
+      this.fileService.clearInputFile(fileBtn);
+      fileBtn.click();
+    }
+  }
+
   fileChanged({ files }: any): void {
     this.subscription = this.fileService.readFileImage(files).subscribe(
       ({ data: res }) => {
@@ -103,6 +131,7 @@ export class CarouselImageComponent implements OnInit, OnDestroy {
           });
           return;
         }
+
         this.listFile.push({
           id: new Date().getTime(),
           name: res.name,
@@ -137,5 +166,43 @@ export class CarouselImageComponent implements OnInit, OnDestroy {
 
     this.listFile.splice(index, 1);
     this.output_files.emit(this.listFile);
+  }
+
+  async takePhoto() {
+    if (this.listFile.length > 2) {
+      this.matSnackBar.open('Solo 3 fotos', '', {
+        duration: 2000,
+        panelClass: 'snackBar_error',
+      });
+      return;
+    }
+    (async () => {
+      try {
+        const { dataUrl } = await this.permissionService.myPhoto();
+        if (!dataUrl) {
+          this.matSnackBar.open('Imagen no reconocida', '', {
+            duration: 2000,
+            panelClass: 'snackBar_error',
+          });
+          return;
+        }
+
+        const id: number = new Date().getTime();
+        this.listFile.push({
+          id,
+          name: `${String(id)}.jpeg`,
+          url: '',
+          data: dataUrl,
+          status: 'insert',
+        });
+
+        this.output_files.emit(this.listFile);
+
+        setTimeout(() => {
+          if (this.listFile.length > 1)
+            this.owlCarousel?.to(this.owlCarousel.slides.last.id);
+        }, 100);
+      } catch (error) {}
+    })();
   }
 }

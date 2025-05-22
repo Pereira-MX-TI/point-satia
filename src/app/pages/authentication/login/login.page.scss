@@ -3,13 +3,14 @@
     height: 100%;
 
 
+
     background-image: url("/assets/login_backgroud.jpg");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
     display: flex;
     flex-direction: column;
-    align-items: center
+    align-items: center;
 }
 
 img{
@@ -17,19 +18,10 @@ img{
     height: 8rem;
     width: 100%;
     object-fit: contain;
-    background-color: rgb(var(--color-new-3-1),0.9);
-    padding-bottom: 1rem;
 }
 form{
-    display: flex;
-    flex-direction: column;
-    height: calc(50% - 8rem);
+    height: 50%;
     width: 100%;
-    align-items: center;
-    justify-content: center;
-
-    padding: 0 10%;
-    box-sizing: border-box;
     background-color: rgb(var(--color-new-3-1),0.9);
 }
 
@@ -54,4 +46,16 @@ form ion-button{
 
 .rect_2{
     clip-path: polygon(100% 100%, 100% 0, 0 100%);
+}
+
+.content{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+
+    padding: 10%;
+    box-sizing: border-box;
 }

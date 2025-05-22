@@ -1,20 +1,20 @@
 import { trigger, transition, style, animate } from '@angular/animations';
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { NavigationEnd, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
-import { Subscription, debounceTime, filter, finalize } from 'rxjs';
+import { Subscription, debounceTime } from 'rxjs';
 import { ListItemComponent } from 'src/app/components/list-item/list-item.component';
 import { initializeListSubscription } from 'src/app/functions/subscription-list.function';
+import { generateUUID } from 'src/app/functions/UUID.function';
 import { ColumnConfig } from 'src/app/models/column-config.model';
-import { DataFilter } from 'src/app/models/DataFilterCounter.model';
+import { Counter } from 'src/app/models/counter.model';
 import { ResponseListItem } from 'src/app/models/response-list-item.model';
 import { Location_route } from 'src/app/models/route/location_route.model';
 import { DataPage } from 'src/app/models/shared/dataPage';
+import { CounterObservable } from 'src/app/observables/counters.observable';
 import { RouteObservable } from 'src/app/observables/route.observable';
 import { CounterPipe } from 'src/app/pipes/counter/counter.pipe';
 import { DataListService } from 'src/app/services/data-list.service';
-import { IonicStorageService } from 'src/app/services/ionic-storage.service';
 import { ListInformationService } from 'src/app/services/list-information.service';
 
 @Component({
@@ -35,41 +35,40 @@ import { ListInformationService } from 'src/app/services/list-information.servic
 })
 export class ListCounterPage implements OnInit, OnDestroy {
   private router: Router = inject(Router);
+
+  counterObservable: CounterObservable = inject(CounterObservable);
   private dataListService: DataListService = inject(DataListService);
   private routeObservable: RouteObservable = inject(RouteObservable);
   private listInformationService: ListInformationService = inject(
     ListInformationService
   );
 
-  private readonly ionicStorageService: IonicStorageService =
-    inject(IonicStorageService);
-
-  currentLocation: Location_route | null;
-
+  currentLocation: Location_route | null = null;
   listSubscription: Subscription[];
   dataPage: DataPage;
   loading: boolean = true;
   columns: ColumnConfig[] = [];
   counterPipe: CounterPipe = new CounterPipe();
+  listCounter: Array<Counter> = [];
 
   constructor() {
     this.columns = [
       {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         head: 'Contador',
         name: 'meter_serial',
         type: 'text',
         size: 3,
       },
       {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         head: 'Ubicación',
         name: 'address',
         type: 'text',
         size: 3,
       },
       {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         head: '',
         name: 'btn',
         type: 'btn',
@@ -79,15 +78,14 @@ export class ListCounterPage implements OnInit, OnDestroy {
     ];
 
     this.dataPage = this.dataListService.buildDataList();
-    this.listSubscription = initializeListSubscription(3);
-
-    this.currentLocation = this.routeObservable.getData();
+    this.listSubscription = initializeListSubscription(4);
   }
 
   ngOnInit(): void {
     this.subscriptionDataInput();
     this.subscriptionSearch();
-    this.refresh();
+    this.subscriptionCounter();
+    this.subscriptionRoute();
   }
 
   ngOnDestroy(): void {
@@ -100,6 +98,8 @@ export class ListCounterPage implements OnInit, OnDestroy {
     this.listSubscription[0] = this.listInformationService.dataInput$
       .pipe(debounceTime(500))
       .subscribe((value: string) => {
+        if (this.router.url !== '/DashBoard/Counters/List') return;
+
         if (!value || value.trim() == '') {
           this.listInformationService.autoComplete$.emit([]);
           return;
@@ -111,41 +111,60 @@ export class ListCounterPage implements OnInit, OnDestroy {
         }
 
         const listWord: string[] = [];
-        const nameStore: string = `route-${this.currentLocation?.id}`;
+        value = value.toLowerCase();
 
-        this.ionicStorageService.get(nameStore).then((dataStore: any) => {
-          if (!dataStore) return;
+        this.listCounter.forEach((itr: Counter) => {
+          if (itr.meter_serial.toLowerCase().startsWith(value)) {
+            listWord.push(itr.meter_serial);
+          }
 
-          const { list } = dataStore;
+          if (itr.section.toLowerCase().startsWith(value)) {
+            listWord.push(itr.section);
+          }
 
-          list.forEach((itr: DataFilter) => {
-            if (itr.meter_serial.toLowerCase().startsWith(value)) {
-              listWord.push(itr.meter_serial);
-            }
-
-            if (itr.section.toLowerCase().startsWith(value)) {
-              listWord.push(itr.section);
-            }
-
-            if (itr.address.toLowerCase().startsWith(value)) {
-              listWord.push(itr.address);
-            }
-          });
-
-          const uniqueListLowerCase: string[] = Array.from(
-            new Set(listWord.map((word) => word.toLowerCase()))
-          );
-
-          this.listInformationService.autoComplete$.emit(uniqueListLowerCase);
+          if (itr.address.toLowerCase().startsWith(value)) {
+            listWord.push(itr.address);
+          }
         });
+
+        const uniqueListLowerCase: string[] = Array.from(
+          new Set(listWord.map((word) => word.toLowerCase()))
+        );
+
+        this.listInformationService.autoComplete$.emit(uniqueListLowerCase);
       });
   }
 
   private subscriptionSearch(): void {
     this.listSubscription[1] = this.listInformationService.search$.subscribe(
       (response: string) => {
+        if (this.router.url !== '/DashBoard/Counters/List') return;
+
         this.dataPage.dataPaginator.search = response;
+
         this.search();
+      }
+    );
+  }
+
+  private subscriptionCounter(): void {
+    this.listSubscription[2] = this.counterObservable.data$.subscribe(
+      (res: Array<Counter> | null) => {
+        if (!res) {
+          this.reset();
+          return;
+        }
+
+        this.listCounter = res;
+        this.resetAndRefresh();
+      }
+    );
+  }
+
+  subscriptionRoute() {
+    this.listSubscription[3] = this.routeObservable.data$.subscribe(
+      (res: Location_route | null) => {
+        this.currentLocation = res;
       }
     );
   }
@@ -157,77 +176,74 @@ export class ListCounterPage implements OnInit, OnDestroy {
   refresh(): void {
     if (!this.currentLocation) return;
 
-    const nameStore: string = `route-${this.currentLocation.id}`;
-    this.ionicStorageService.get(nameStore).then((dataStore: any) => {
-      if (!dataStore) {
-        this.loading = false;
-        return;
-      }
+    setTimeout(() => {
+      this.dataPage = this.dataListService.updateDataList(
+        this.dataPage,
+        this.listCounter,
+        'tableCounter'
+      );
 
-      const { list } = dataStore;
-
-      setTimeout(() => {
-        this.dataPage = this.dataListService.updateDataList(
-          this.dataPage,
-          list,
-          'tableGpsCounter'
-        );
-
-        this.loading = false;
-      }, 1000);
-    });
+      this.loading = false;
+    }, 1000);
   }
 
   search(): void {
     if (!this.currentLocation) return;
 
     this.loading = true;
-    const listData: any[] = [];
-    const nameStore: string = `route-${this.currentLocation.id}`;
+    const listData: Array<Counter> = [];
 
-    this.ionicStorageService.get(nameStore).then((dataStore: any) => {
-      if (!dataStore) return;
-
-      const { list } = dataStore;
-
-      list.forEach((itr: DataFilter) => {
-        if (
-          itr.meter_serial
-            .toLowerCase()
-            .includes(this.dataPage.dataPaginator.search) ||
-          itr.section
-            .toLowerCase()
-            .includes(this.dataPage.dataPaginator.search) ||
-          itr.address.toLowerCase().includes(this.dataPage.dataPaginator.search)
-        ) {
-          listData.push(itr);
-        }
-      });
-      this.dataPage = this.dataListService.buildDataList();
-
-      setTimeout(() => {
-        this.dataPage.dataPaginator = this.dataListService.changePaginator(
-          this.dataPage.dataPaginator,
-          listData.length
-        );
-
-        this.dataPage = this.dataListService.updateDataList(
-          this.dataPage,
-          listData,
-          'tableGpsCounter'
-        );
-
-        this.loading = false;
-      }, 1000);
+    this.listCounter.forEach((itr: Counter) => {
+      if (
+        itr.meter_serial
+          .toLowerCase()
+          .includes(this.dataPage.dataPaginator.search) ||
+        itr.section
+          .toLowerCase()
+          .includes(this.dataPage.dataPaginator.search) ||
+        itr.address.toLowerCase().includes(this.dataPage.dataPaginator.search)
+      ) {
+        listData.push(itr);
+      }
     });
+    this.dataPage = this.dataListService.buildDataList();
+
+    setTimeout(() => {
+      this.dataPage = this.dataListService.updateDataList(
+        this.dataPage,
+        listData,
+        'tableCounter'
+      );
+
+      this.loading = false;
+    }, 1000);
   }
 
   selectColumn({ data, operation }: ResponseListItem): void {
     if (operation !== 'view') return;
 
     this.router.navigate(['DashBoard/Counters/AddGpsAndPhoto'], {
-      queryParams: { data: btoa(JSON.stringify(data)) },
+      queryParams: {
+        data: btoa(
+          JSON.stringify({
+            id: data.id,
+            meter_serial: data.meter_serial,
+          })
+        ),
+      },
     });
+  }
+
+  reset(): void {
+    this.loading = false;
+    this.listCounter = [];
+    this.dataPage = this.dataListService.buildDataList();
+
+    this.dataPage = this.dataListService.updateDataList(
+      this.dataPage,
+      this.listCounter,
+      'tableCounter'
+    );
   }
 
   resetAndRefresh(): void {

@@ -8,6 +8,7 @@ section{
     position: relative;
     display: flex;
     flex-direction: column;
+    padding: 0.5rem;
 }
 
 .content {
@@ -17,18 +18,26 @@ section{
     height: 1rem;
 }
 
-
-
-.slide mat-icon{
+.icon{
   cursor: pointer;
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  font-size: 2rem;
+
   background-color: rgba(var(--color-new-3-1));
   padding: 0.25rem;
-  border-radius:50% ;
+  border-radius:50%;
 
   color: rgba(var(--color-new-1-1));
+}
+
+.trash{
+  top: 1rem;
+  right: 1rem;
+}
+
+.expand{
+  bottom:  1rem;
+  right: 1rem;
 }
 
 
@@ -56,5 +65,10 @@ section{
 img {
   width: 100% !important;
   height: 100% !important;
-  object-fit: contain;
+  object-fit: cover;
 }
+
+.take_photo{
+    --background: rgba(var(--color-new-3-1)) !important;
+    --color: rgba(var(--color-new-1-1)) !important;
+  }

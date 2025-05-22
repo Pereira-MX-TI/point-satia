@@ -9,6 +9,7 @@ import { Account } from '../../models/authentication/account';
 import { LoginObservable } from '../../observables/login.observable';
 import { CryptoService } from '../crypto.service';
 import { ErrorHttpService } from '../error-http.service';
+import { Counter } from '../../models/counter.model';
 
 @Injectable({
   providedIn: 'root',
@@ -170,6 +171,22 @@ export class HttpRouteService {
     return this.httpClient
       .get<any>(`${this.url_api}/locations/photosCounterByRoute`, {
         params,
+        headers: { opc: '1' },
+      })
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          return this.errorHttpService.getError(error);
+        })
+      );
+  }
+
+  uploadPhotosAndGpsByRoute(dto: {
+    list: Array<Counter>;
+    route_id: number | string;
+  }): Observable<any> {
+    const body = { data: this.cryptoService.encrypted(dto) };
+    return this.httpClient
+      .post<any>(`${this.url_api}/locations/uploadPhotosAndGpsByRoute`, body, {
         headers: { opc: '1' },
       })
       .pipe(

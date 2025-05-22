@@ -1,9 +1,26 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.ionic.starter',
-  appName: 'pointsat',
-  webDir: 'www'
+  appId: 'mx.medidordeagua.pointsat',
+  appName: 'PointSat',
+  webDir: 'www',
+  plugins: {
+    SplashScreen: {
+      launchShowDuration: 0,
+      launchAutoHide: true,
+      backgroundColor: '#FFFFFF',
+      androidSplashResourceName: 'splash',
+      androidScaleType: 'CENTER_CROP',
+      showSpinner: false,
+      androidSpinnerStyle: 'large',
+      iosSpinnerStyle: 'small',
+      spinnerColor: '#999999',
+      splashFullScreen: false,
+      splashImmersive: false,
+      layoutName: 'launch_screen',
+      useDialog: false,
+    },
+  },
 };
 
 export default config;

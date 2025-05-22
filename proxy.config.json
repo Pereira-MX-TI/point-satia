@@ -1,6 +1,6 @@
 {
     "/api/**": {
-        "target": "https://satiaserver.solucionesjmpf.com",
+        "target": "https://satiaserverdev.solucionesjmpf.com",
         "secure": true,
         "logLevel": "debug",
         "changeOrigin": true

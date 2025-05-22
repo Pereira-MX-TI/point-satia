@@ -7,6 +7,7 @@ import { Subscription, debounceTime, finalize } from 'rxjs';
 import { ListItemComponent } from 'src/app/components/list-item/list-item.component';
 import { NavBarSimpleComponent } from 'src/app/components/nav-bar-simple/nav-bar-simple.component';
 import { initializeListSubscription } from 'src/app/functions/subscription-list.function';
+import { generateUUID } from 'src/app/functions/UUID.function';
 import { Account } from 'src/app/models/authentication/account';
 import { ColumnConfig } from 'src/app/models/column-config.model';
 import { ResponseListItem } from 'src/app/models/response-list-item.model';
@@ -54,14 +55,14 @@ export class ListDatabasePage implements OnInit, OnDestroy {
   constructor() {
     this.columns = [
       {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         head: 'Base de datos',
         name: 'database',
         type: 'text',
         size: 3,
       },
       {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         head: '',
         name: 'btn',
         type: 'btn',

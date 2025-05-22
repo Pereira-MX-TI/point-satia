@@ -10,5 +10,4 @@ export class ListInformationService {
   autoComplete$: EventEmitter<string[]> = new EventEmitter<string[]>();
   search$: EventEmitter<string> = new EventEmitter<string>();
   resetInput$: EventEmitter<void> = new EventEmitter<void>();
-  totalRecords$: EventEmitter<void> = new EventEmitter<void>();
 }

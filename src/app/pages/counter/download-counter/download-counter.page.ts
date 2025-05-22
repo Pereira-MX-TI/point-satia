@@ -1,20 +1,15 @@
 import { trigger, transition, style, animate } from '@angular/animations';
-import {
-  AfterViewInit,
-  Component,
-  inject,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AlertController, IonicModule } from '@ionic/angular';
 import { finalize, Subscription, zip } from 'rxjs';
 import { LoadingComponent } from 'src/app/components/loading/loading.component';
 import { initializeListSubscription } from 'src/app/functions/subscription-list.function';
+import { Counter } from 'src/app/models/counter.model';
 import { Location_route } from 'src/app/models/route/location_route.model';
+import { CounterObservable } from 'src/app/observables/counters.observable';
 import { RouteObservable } from 'src/app/observables/route.observable';
 import { IonicStorageService } from 'src/app/services/ionic-storage.service';
-import { ListInformationService } from 'src/app/services/list-information.service';
 import { NetworkStatusService } from 'src/app/services/network-status.service';
 import { HttpRouteService } from 'src/app/services/route/http-route.service';
 
@@ -35,12 +30,11 @@ import { HttpRouteService } from 'src/app/services/route/http-route.service';
   ],
 })
 export class DownloadCounterPage implements OnInit, OnDestroy {
-  private listInformationService: ListInformationService = inject(
-    ListInformationService
-  );
   private httpRouteService: HttpRouteService = inject(HttpRouteService);
   private snackBar: MatSnackBar = inject(MatSnackBar);
-  currentLocation: Location_route | null;
+  currentLocation: Location_route | null = null;
+
+  counterObservable: CounterObservable = inject(CounterObservable);
   networkStatusService: NetworkStatusService = inject(NetworkStatusService);
   private routeObservable: RouteObservable = inject(RouteObservable);
   private alertController: AlertController = inject(AlertController);
@@ -52,12 +46,12 @@ export class DownloadCounterPage implements OnInit, OnDestroy {
   listSubscription: Subscription[];
 
   constructor() {
-    this.currentLocation = this.routeObservable.getData();
-    this.listSubscription = initializeListSubscription(1);
+    this.listSubscription = initializeListSubscription(2);
   }
 
   ngOnInit() {
     this.subscriptionStatusNetwork();
+    this.subscriptionRoute();
   }
 
   ngOnDestroy(): void {
@@ -73,6 +67,14 @@ export class DownloadCounterPage implements OnInit, OnDestroy {
       });
   }
 
+  subscriptionRoute() {
+    this.listSubscription[1] = this.routeObservable.data$.subscribe(
+      (res: Location_route | null) => {
+        this.currentLocation = res;
+      }
+    );
+  }
+
   register(): void {
     if (!this.online) {
       this.offlineAlert();
@@ -86,17 +88,26 @@ export class DownloadCounterPage implements OnInit, OnDestroy {
       this.httpRouteService.gpsCounterByRoute({
         filter: 'fail',
         route_id: this.currentLocation.id,
-        option: 0,
+        option: 1,
+        limit: 500,
+        offset: 0,
       }),
       this.httpRouteService.photosCounterByRoute({
         route_id: this.currentLocation.id,
-        option: 0,
+        option: 1,
+        limit: 500,
+        offset: 0,
       })
     )
       .pipe(finalize(() => (this.loading = false)))
       .subscribe(
         (res: any[]) => {
-          const nameStore: string = `route-${this.currentLocation?.id}`;
+          if (!this.currentLocation) return;
+
+          const nameStore: string = `${this.currentLocation.name.replace(
+            /\s+/g,
+            ''
+          )}-${this.currentLocation.id}`;
           const { list: gpsListSimple } = res[0].data;
           const { list: photoListSimple } = res[1].data;
 
@@ -126,14 +137,9 @@ export class DownloadCounterPage implements OnInit, OnDestroy {
     nameStore: string,
     gpsListSimple: Array<any>,
     photoListSimple: Array<any>,
-    dataStore: any
+    dataStore: Array<Counter>
   ): void {
-    const {
-      gpsData: { list: gpsListStore },
-      photoData: { list: photoListStore },
-    } = dataStore;
-
-    const gpsListComplete: any[] = gpsListSimple.map((itrGps) => ({
+    const gpsListComplete: Counter[] = gpsListSimple.map((itrGps) => ({
       id: itrGps.water_meter_id,
       meter_serial: itrGps.meter_serial,
       section: itrGps.section,
@@ -145,32 +151,32 @@ export class DownloadCounterPage implements OnInit, OnDestroy {
       },
     }));
 
-    const photoListComplete: any[] = photoListSimple.map((itrPhoto) => ({
+    const photoListComplete: Counter[] = photoListSimple.map((itrPhoto) => ({
       id: itrPhoto.water_meter_id,
       meter_serial: itrPhoto.meter_serial,
       section: itrPhoto.section,
       address: itrPhoto.address,
-      photos: 0,
+      photos: [],
     }));
 
     const gpsListToAdd = gpsListComplete
       .filter(
-        (item) => !gpsListStore.some((stored: any) => stored.id === item.id)
+        (item) => !dataStore.some((stored: Counter) => stored.id === item.id)
       )
       .map((item) => ({ ...item }));
 
     const photoListToAdd = photoListComplete
       .filter(
-        (item) => !photoListStore.some((stored: any) => stored.id === item.id)
+        (item) => !dataStore.some((stored: Counter) => stored.id === item.id)
       )
       .map((item) => ({ ...item }));
 
-    const list: Array<any> = this.mergeList(
-      [...gpsListStore, ...gpsListToAdd],
-      [...photoListStore, ...photoListToAdd]
+    const list: Array<Counter> = this.mergeList(
+      [...dataStore, ...gpsListToAdd],
+      [...dataStore, ...photoListToAdd]
     );
 
-    this.ionicStorageService.set(nameStore, { list });
+    this.counterObservable.updateData(nameStore, list);
     this.presentAlert();
   }
 
@@ -196,13 +202,15 @@ export class DownloadCounterPage implements OnInit, OnDestroy {
       meter_serial: itrPhoto.meter_serial,
       section: itrPhoto.section,
       address: itrPhoto.address,
-      photos: 0,
+      photos: [],
     }));
 
-    const list: Array<any> = this.mergeList(gpsListComplete, photoListComplete);
+    const list: Array<Counter> = this.mergeList(
+      gpsListComplete,
+      photoListComplete
+    );
 
-    this.ionicStorageService.set(nameStore, { list });
-
+    this.counterObservable.updateData(nameStore, list);
     this.presentAlert();
   }
 
@@ -215,9 +223,6 @@ export class DownloadCounterPage implements OnInit, OnDestroy {
         {
           text: 'Cerrar',
           role: 'cancel',
-          handler: () => {
-            this.listInformationService.totalRecords$.emit();
-          },
         },
       ],
     });

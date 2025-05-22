@@ -37,13 +37,14 @@
       <ion-icon name="locate"></ion-icon>
     </ion-button>
   </form>
-  }
+  } @if(viewFormPhotos){
 
   <div class="container_photo">
     <app-carousel-image
       [attach]="true"
-      (output_files)="files = $event"
+      (output_files)=" updatePhotosStore( $event) "
       [input_files]="files"
     ></app-carousel-image>
   </div>
+  }
 </ion-content>
